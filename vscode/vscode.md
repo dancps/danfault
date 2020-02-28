@@ -1,5 +1,8 @@
 # VSCode 
 ## Configs
+Just copy config files to:
+* `~/.config/Code/User` on Linux
+* `C:\Users\username\AppData\Roaming\Code\User` on Windows 10
 
 ## Extensions
 
@@ -20,3 +23,6 @@ Or manually by:
 ```bash
 code --install-extension [EXTENSION]
 ```
+
+## Links
+* [How to export settings of Visual Studio Code?](https://stackoverflow.com/questions/35368889/how-to-export-settings-of-visual-studio-code)
