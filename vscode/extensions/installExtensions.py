@@ -12,8 +12,9 @@ def main():
 
     ext_file = open(os.path.join(cwd,file_path))#open file
     for extension in ext_file:
-        command = 'code --install-extension {}'.format(extension)
-        print("  + Installing {}".format(extension))
+        if(extension.startswith("#")): continue
+        command = 'code --install-extension {}'.format(extension.strip())
+        print("+ Installing {}".format(extension.strip()))
         os.system(command)
 
 if(__name__=="__main__"):

@@ -1,1 +1,15 @@
 ritwickdey.LiveServer
+# Themes
+soft-aesthetic.soft-era-theme
+dawranliou.minimal-theme-vscode
+robertrossmann.remedy
+sainnhe.gruvbox-material
+enkia.tokyo-night
+loilo.snazzy-light
+marqu3s.aurora-x
+dahong.theme-bear
+peymanslh.blueberry-dark-theme
+apvarun.celestiale
+# Icons
+rastikerdar.vscode-seedling-icon-theme
+keenethics.keen-neutral-icon-theme
