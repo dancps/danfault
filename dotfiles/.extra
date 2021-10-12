@@ -1,0 +1,30 @@
+# This opens new tabs in the same directory
+source /etc/profile.d/vte.sh
+
+# Function to set title
+if [ -n "$ZSH_VERSION" ]; then
+   # assume Zsh
+  function set-title() {
+    echo -en "\e]2;$@\a"
+  }
+
+  # Stops cycling through the options
+  setopt noautomenu
+  setopt nomenucomplete
+
+  # Sets prefered title 
+  ZSH_THEME="refined" 
+
+elif [ -n "$BASH_VERSION" ]; then
+   # assume Bash
+  function title() {
+    if [[ -z "$ORIG" ]]; then
+      ORIG=$PS1
+    fi
+    TITLE="\[\e]2;$*\a\]"
+    PS1=${ORIG}${TITLE}
+  }
+else
+   # assume something else
+   echo "Not a valid shell.(Check for .extra file in order to debug)"
+fi
