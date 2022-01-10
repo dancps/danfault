@@ -1,0 +1,14 @@
+name: dan
+
+dependencies:
+  - python=3.9
+  - pip
+  - pandas
+  - numpy
+  - seaborn
+  - matplotlib
+  - termcolor
+  - colorama
+  - scipy
+  - jupyter
+  - jupyterlab
