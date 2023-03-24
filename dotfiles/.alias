@@ -1,2 +1,24 @@
+# Clear
 alias cl='clear'
+
+# ls
 alias ll="ls -l"
+alias lg='ls --group-directories-first'
+alias lgl='ls -l --group-directories-first'
+
+# Kubectl
+alias k='kubectl'
+alias kg='kubectl get'
+alias kd='kubectl describe'
+alias kl='kubectl logs'
+
+# Git
+alias g='git'
+
+# Virtual Envs
+alias ml='source $HOME/.venvs/ml/bin/activate'
+alias dan='source $HOME/.venvs/dan/bin/activate'
+
+# Folders
+alias documents='cd $HOME/Documents'
+alias desktop='cd $HOME/Desktop'
