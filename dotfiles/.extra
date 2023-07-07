@@ -1,5 +1,5 @@
 # This opens new tabs in the same directory
-source /etc/profile.d/vte.sh
+# source /etc/profile.d/vte.sh
 
 # Function to set title
 if [ -n "$ZSH_VERSION" ]; then

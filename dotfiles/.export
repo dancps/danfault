@@ -1,0 +1,19 @@
+unsetopt autocd
+
+export PATH=$PATH:/usr/local/bin/
+export PATH=PATH="/opt/homebrew/opt/libtool/libexec/gnubin:$PATH"
+export LDFLAGS="-L/opt/homebrew/opt/openblas/lib"
+export CPPFLAGS="-I/opt/homebrew/opt/openblas/include"
+# For pkg-config to find openblas you may need to set:
+export PKG_CONFIG_PATH="/opt/homebrew/opt/openblas/lib/pkgconfig"
+# if [ "$(uname)" == "Darwin" ]; then
+#     # For compilers to find openblas you may need to set:
+#     echo "A "
+#     echo "A "
+# elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+#     # Do something under GNU/Linux platforms
+# elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+#     # Do something under 32 bits Windows NT platform
+# elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW64_NT" ]; then
+#     # Do something under 64 bits Windows NT platform
+# fi

@@ -11,7 +11,7 @@ alias k='kubectl'
 alias kg='kubectl get'
 alias kd='kubectl describe'
 alias kl='kubectl logs'
-
+alias gred="grep -E --color=auto 'word|$'"
 # Git
 alias g='git'
 
@@ -22,3 +22,4 @@ alias dan='source $HOME/.venvs/dan/bin/activate'
 # Folders
 alias documents='cd $HOME/Documents'
 alias desktop='cd $HOME/Desktop'
+alias zsh_reload='source ~/.zshrc'
