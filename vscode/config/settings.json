@@ -3,4 +3,13 @@
     "editor.acceptSuggestionOnEnter": "off",
     "window.zoomLevel": 0,
     "git.ignoreLegacyWarning": true,
+
+    "workbench.tree.indent": 14,
+    "python.analysis.autoSearchPaths": false,
+    "python.linting.flake8Enabled": true,
+    "python.linting.flake8Args": [
+        "--max-line-length=89"
+    ],
+    "notebook.output.textLineLimit": 200,
+    "python.linting.enabled": false,
 }
