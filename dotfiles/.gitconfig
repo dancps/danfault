@@ -1,7 +1,7 @@
 [oh-my-zsh]
 	hide-status = 1
-[credential]
-	helper = store
+# [credential]
+# 	helper = store
 [init]
 	defaultBranch = main
 [color]
