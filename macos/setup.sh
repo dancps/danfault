@@ -1,5 +1,5 @@
 #!/bin/bash
-DANFAULT_DIR=$(grealpath $(dirname "$0")/..) # Relative to the pwd
+DANFAULT_DIR=$(realpath $(dirname "$0")/..) # Relative to the pwd
 echo "Danfault dir: $DANFAULT_DIR"
 
 # Install homebrew
@@ -7,14 +7,14 @@ echo Installing homebrew
 if ! command -v brew &> /dev/null
 then
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-    (echo; echo 'eval "$(/opt/homebrew/bin/brew shellenv)"') >> /Users/dancps/.zprofile
-    eval "$(/opt/homebrew/bin/brew shellenv)"
+    # (echo; echo 'eval "$(/opt/homebrew/bin/brew shellenv)"') >> /Users/dancps/.zprofile
+    # eval "$(/opt/homebrew/bin/brew shellenv)"
 else
     echo "Homebrew is already installed"
 fi
 
 echo Installing Oh-my-zsh
-if [ -d $(grealpath "~/.oh-my-zsh/") ];
+if [ -d "~/.oh-my-zsh/" ];
 then
     echo "~/.oh-my-zsh/ directory exists."
 else
@@ -26,13 +26,13 @@ fi
 #    Commands also provided by macOS and the commands dir, dircolors, vdir have been installed with the prefix "g".
 #    If you need to use these commands with their normal names, you can add a "gnubin" directory to your PATH with:
 #      PATH="/opt/homebrew/opt/coreutils/libexec/gnubin:$PATH"
-echo "Installing coreutils"
-brew install -q coreutils 
+# echo "Installing coreutils"
+# brew install -q coreutils 
 
 
 # Calls vscode.sh
 echo 'Configuring vscode'
-./macos/vscode.sh
+# ./macos/vscode.sh
 
 echo "Installing python"
 if [ -d ~/software/python/ ];
@@ -51,14 +51,15 @@ tar xf Python-3.8.16.tar.xz
 cd  Python-3.8.16
 
 # Installs xcode extras
-echo "Install xcode-select"
-xcode-select --install
+# echo "Install xcode-select"
+# xcode-select --install
 
 # Installs some dependencies
 brew install -q pkg-config openssl@1.1 xz gdbm tcl-tk
 
-brew install colima
-brew install docker
+# Installs colima and docker
+# brew install colima
+# brew install docker
 
 # None of the above worked
 # brew install openblas
