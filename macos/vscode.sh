@@ -1,10 +1,10 @@
 #!/bin/bash
 echo "++++++++++++++++++++++++++++++++++++++++ VSCODE"
-CODE_FOLDER=$(grealpath ~/Library/Application\ Support/Code/User/)
+CODE_FOLDER=$(realpath ~/Library/Application\ Support/Code/User/)
 echo Code path: $CODE_FOLDER
 
 
-DANFAULT_DIR=$(grealpath $(dirname "$0")/..) # Relative to the pwd
+DANFAULT_DIR=$(realpath $(dirname "$0")/..) # Relative to the pwd
 echo "Danfault dir: $DANFAULT_DIR"
 
 echo "Copying files to code dir:"
