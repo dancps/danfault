@@ -1,8 +1,4 @@
 import logging
-import os
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
 import argparse
 from datetime import datetime as dt
 try:
@@ -40,7 +36,7 @@ class Formatter(logging.Formatter):
             "CRITICAL": ['bold']
         }
         header = "{asctime} - {levelname:<8}" if verbose else "{levelname:<8}" 
-        prefix = colored("{filename}:{name}:{lineno:<4} ",attrs=['dark']) if debug else ""
+        prefix = colored("{filename}:{name}:{lineno:<4} ",attrs=['dark']) if debug else (colored("{filename} ",attrs=['dark']) if verbose else "")
         format = "{message}"
 
         self.FORMATS = {

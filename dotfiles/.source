@@ -1,1 +1,1 @@
-source "${HOME}/conda/etc/profile.d/conda.sh"
+# source "${HOME}/conda/etc/profile.d/conda.sh"
