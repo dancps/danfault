@@ -12,4 +12,18 @@
     ],
     "notebook.output.textLineLimit": 200,
     "python.linting.enabled": false,
+    "editor.rulers": [
+        {
+            "column": 80,
+            "color": "#000000"
+        },
+        {
+            "column": 100,  // a ruler with the default or editorRuler.foreground color at column 100
+        },
+        {
+            "column": 120,
+            "color": "#ff0000"
+        },
+        
+    ]
 }
