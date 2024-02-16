@@ -1,5 +1,6 @@
 export PATH=$PATH:/usr/local/bin/
 export PATH=$PATH:${HOME}/conda/bin/
+export PATH=$PATH:/usr/local/texlive/2023/bin/universal-darwin/
 
 # export PATH=PATH="/opt/homebrew/opt/libtool/libexec/gnubin:$PATH"
 # export LDFLAGS="-L/opt/homebrew/opt/openblas/lib"
