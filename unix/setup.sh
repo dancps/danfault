@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-DANFAULT_DIR=$(realpath $(dirname $(readlink -f setup.sh))/../)
+SETUP_FILE=$(readlink -f $0)
+SETUP_DIR=$(dirname $SETUP_FILE)
+DANFAULT_DIR=$(realpath $SETUP_DIR/..)
 TEMPORARY_DANFAULT=$(realpath $DANFAULT_DIR/.tmp/)
 source $DANFAULT_DIR/dotfiles/.colors
 source $DANFAULT_DIR/dotfiles/.alias
@@ -7,13 +9,11 @@ source $DANFAULT_DIR/dotfiles/.export
 source $DANFAULT_DIR/dotfiles/.extra
 source $DANFAULT_DIR/dotfiles/.source
 
-# sudo apt update
-# sudo apt upgrade -y
+sudo apt update
+sudo apt upgrade -y
 
-# sudo apt install curl -y
+sudo apt install curl -y
 
-# TODO: install zsh
-# TODO: install oh my zsh
 
 echo -e "${Green}+==============================================================================+${Color_Off}" 
 echo -e "${Green}+==         ${BGreen}danfault Setup${Color_Off}${Green}                                                   ==+${Color_Off}" 
@@ -24,7 +24,6 @@ echo -e "${Green}+ Variables:${Color_Off}"
 echo -e "${Green}+${Color_Off}  ${BWhite}DANFAULT_DIR:${Color_Off}       ${DANFAULT_DIR}" 
 echo -e "${Green}+${Color_Off}  ${BWhite}TEMPORARY_DANFAULT:${Color_Off} ${TEMPORARY_DANFAULT}" 
 echo -e "${Green}+==============================================================================+${Color_Off}" 
-
 
 
 ###############################################################################
@@ -57,6 +56,56 @@ else
   echo -e "${Cyan}[danfault - Setup]${Color_Off} Temporary danfault dir does not exists. Creating $TEMPORARY_DANFAULT..."
   mkdir $TEMPORARY_DANFAULT
 fi
+
+###############################################################################
+### zsh                                                                ###
+###############################################################################
+#
+# 
+#  Install zsh
+echo -e "${Cyan}[danfault - ZSH]${Color_Off} Installing zsh"
+sudo apt install zsh
+# Install oh my zsh
+echo -e "${Cyan}[danfault - Oh my zsh]${Color_Off} Installing ohmyzsh"
+if [ -e ~/.oh-my-zsh ]
+then
+    echo -e "${Cyan}[danfault - Oh my zsh]${Color_Off} Oh my ZSH is already installed"
+else
+    echo -e "${Cyan}[danfault - Oh my zsh]${Color_Off} Installing ohmyzsh"
+    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" --unattended
+    # Sets default sh to zsh
+    chsh -s $(which zsh)
+fi
+
+
+###############################################################################
+### Docker                                                                  ###
+###############################################################################
+#
+# 
+
+
+# Add Docker's official GPG key:
+echo -e "${Cyan}[danfault - Docker]${Color_Off} Adding docker GPG keys"
+sudo apt-get update
+sudo apt-get install ca-certificates curl
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+# Add the repository to Apt sources:
+echo -e "${Cyan}[danfault - Docker]${Color_Off} Adding Docker repo to apt sources"
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+
+echo -e "${Cyan}[danfault - Docker]${Color_Off} Installing docker"
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+echo -e "${Cyan}[danfault - Docker]${Color_Off} Verifying docker"
+sudo docker run hello-world
 
 
 ###############################################################################
@@ -139,15 +188,13 @@ then
 else
     echo -e "${Cyan}[danfault - conda]${Color_Off} Downloading conda installation file."
     cd $TEMPORARY_DANFAULT
-    curl -L -O "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh"
-    chmod +x Miniforge3-$(uname)-$(uname -m).sh
+    curl -L "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh" -o "${TEMPORARY_DANFAULT}/Miniforge3-$(uname)-$(uname -m).sh"
+    chmod +x ${TEMPORARY_DANFAULT}/Miniforge3-$(uname)-$(uname -m).sh
 fi
 
 if [ -d "${CONDA_PREFIX_PATH}" ]; then
     echo -e "${Cyan}[danfault - conda]${Color_Off} Conda folder exists."
 else
-    echo -e "${Cyan}[danfault - conda]${Color_Off} Installing Conda"
-    ./Miniforge3-$(uname)-$(uname -m).sh -b -p "${CONDA_PREFIX_PATH}"
+    echo -e "${Cyan}[danfault - conda]${Color_Off} Installing Conda from path:"
+    ${TEMPORARY_DANFAULT}/Miniforge3-$(uname)-$(uname -m).sh -b -p ${CONDA_PREFIX_PATH}
 fi
-
-
