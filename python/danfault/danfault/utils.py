@@ -14,6 +14,23 @@ import pandas as pd
 from danfault.logs import Loggir
 from termcolor import colored
 
+from subprocess import PIPE, Popen
+
+def command(cmd, method="Popen"):
+    if method == "Popen":
+        popen_cmd = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
+        popen_cmd.wait()
+        
+        stdout, stderr = popen_cmd.communicate()
+        stdout = stdout.decode("utf-8")
+        stderr = stderr.decode("utf-8")
+        popen_cmd.terminate()
+    else:
+        cmd_process = os.popen(cmd)
+        stdout = cmd_process.read()
+        cmd_process.close()
+        stderr = "No stderr collected in os.popen()"
+    return stdout, stderr
 
 class Performance:
     def __init__(
