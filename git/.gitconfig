@@ -9,7 +9,8 @@
 [user]
 	name = Danilo C.
 	email = 
-
+[core]
+	pager="less -F -X"
 [alias]
 	co = checkout
 	cm = commit -m
