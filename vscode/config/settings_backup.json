@@ -1,0 +1,42 @@
+{
+    "liveshare.joinDebugSessionOption": "Prompt",
+    "liveshare.autoShareTerminals": false,
+    "liveshare.anonymousGuestApproval": "reject",
+    "liveshare.showReadOnlyUsersInEditor": "always",
+    "liveshare.connectionMode": "relay",
+    "liveshare.openSharedServers": false,
+    "liveshare.shareExternalFiles": false,
+    "telemetry.enableTelemetry": false,
+    "liveshare.increasedGuestLimit": false,
+    "liveshare.autoShareServers": false,
+    "telemetry.enableCrashReporter": false,
+    "liveshare.authenticationProvider": "Microsoft",
+    "workbench.tree.indent": 14,
+    "editor.rulers": [
+        {
+          "column": 80,
+          "color": "#0000002f"
+        },
+        {
+          "column": 100
+        },
+    ],
+    "python.defaultInterpreterPath": "/Users/dancps/.venvs/ml",
+    "python.venvPath": "$HOME/.venvs/",
+    "python.analysis.autoSearchPaths": false,
+    "python.linting.flake8Enabled": true,
+    "editor.minimap.enabled": false,
+    "python.linting.flake8Args": [
+        "--max-line-length=89"
+    ],
+    "notebook.output.textLineLimit": 200,
+    "python.linting.enabled": false,
+    "workbench.colorTheme": "Solarized Light",
+    "window.zoomLevel": 1,
+    "cSpell.userWords": [
+      "Calhes",
+      "Danilo",
+      "sentinela",
+      "sentineladev"
+    ]
+}

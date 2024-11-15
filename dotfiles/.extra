@@ -1,5 +1,5 @@
 # This opens new tabs in the same directory
-source /etc/profile.d/vte.sh
+# source /etc/profile.d/vte.sh
 
 # Function to set title
 if [ -n "$ZSH_VERSION" ]; then
@@ -7,10 +7,16 @@ if [ -n "$ZSH_VERSION" ]; then
   function set-title() {
     echo -en "\e]2;$@\a"
   }
+  
+  plugins=(
+    git
+    zsh-autosuggestions
+  )
 
   # Stops cycling through the options
   setopt noautomenu
   setopt nomenucomplete
+  unsetopt autocd
 
   # Sets prefered title 
   ZSH_THEME="refined" 

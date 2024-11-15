@@ -1,0 +1,78 @@
+// Place your key bindings in this file to override the defaultsauto[]
+// This implies that cmd and ctrl are inverted. If you do not use this:
+//    replace: 
+//      cmd->cmdA
+//      ctrl->cmd
+//      cmdA->ctrl
+//
+[
+    ,
+    {
+        "key": "ctrl+shift+d",
+        "command": "workbench.view.debug",
+        "when": "viewContainer.workbench.view.debug.enabled"
+    },
+    {
+        "key": "shift+cmd+d",
+        "command": "-workbench.view.debug",
+        "when": "viewContainer.workbench.view.debug.enabled"
+    },
+    {
+        "key": "cmd+d",
+        "command": "editor.action.copyLinesDownAction",
+        "when": "editorTextFocus && !editorReadonly"
+    },
+    {
+        "key": "shift+alt+down",
+        "command": "-editor.action.copyLinesDownAction",
+        "when": "editorTextFocus && !editorReadonly"
+    },
+    {
+        "key": "cmd+shift+d",
+        "command": "editor.action.addSelectionToNextFindMatch",
+        "when": "editorFocus"
+    },
+    {
+        "key": "cmd+d",
+        "command": "-editor.action.addSelectionToNextFindMatch",
+        "when": "editorFocus"
+    },
+    {
+        "key": "cmd+y",
+        "command": "redo"
+    },
+    {
+        "key": "shift+cmd+z",
+        "command": "-redo"
+    },
+    {
+        "key": "cmd+h",
+        "command": "editor.action.startFindReplaceAction",
+        "when": "editorFocus || editorIsOpen"
+    },
+    {
+        "key": "ctrl+cmd+f",
+        "command": "-editor.action.startFindReplaceAction",
+        "when": "editorFocus || editorIsOpen"
+    },
+    {
+        "key": "ctrl+shift+i",
+        "command": "editor.action.insertCursorAtEndOfEachLineSelected",
+        "when": "editorTextFocus"
+    },
+    {
+        "key": "shift+alt+i",
+        "command": "-editor.action.insertCursorAtEndOfEachLineSelected",
+        "when": "editorTextFocus"
+    },
+    {
+        "key": "ctrl+z",
+        "command": "editor.action.toggleWordWrap"
+    },
+    {
+        "key": "alt+z",
+        "command": "-editor.action.toggleWordWrap"
+    }
+]
+
+    
