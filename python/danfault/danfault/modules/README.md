@@ -14,3 +14,8 @@ tests/mocks/my_pyproj/pyproject.toml # Should reference
    module_validatora = "danfault.modules.module_validator:maina" (Wrong)
    module_validator3 = "danfault.modules.module_validator:main3" (Wrong)
 ```
+
+# Usage
+```
+ module_validator pyproject.toml
+```
