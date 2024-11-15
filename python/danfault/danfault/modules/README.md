@@ -19,3 +19,8 @@ tests/mocks/my_pyproj/pyproject.toml # Should reference
 ```
  module_validator pyproject.toml
 ```
+
+I should also include classes that creates modules
+- Executables
+- Classes
+- config files
