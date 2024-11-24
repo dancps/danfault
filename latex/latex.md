@@ -8,3 +8,39 @@
 - []()
 - []()
 - []() -->
+
+# MikTeX
+
+To instsall MikTeX:
+```sh
+curl -fsSL https://miktex.org/download/key | sudo tee /usr/share/keyrings/miktex-keyring.asc > /dev/null
+
+echo "deb [signed-by=/usr/share/keyrings/miktex-keyring.asc] https://miktex.org/download/ubuntu noble universe" | sudo tee /etc/apt/sources.list.d/miktex.list
+
+
+sudo apt-get update
+sudo apt-get install miktex
+```
+
+To install the depencies to the latexindent:
+```sh
+sudo apt install libyaml-tiny-perl
+sudo apt install libfile-homedir-perl
+sudo apt install libfuse2 # This might crash Ubuntu
+
+```
+
+If ubuntu crashes, after restart ctrl+alt+F1(or F2) and:
+```sh
+systemctl start NetworkManager
+sudo apt install ubuntu-desktop
+reboot
+```
+
+In MacOS: 
+```sh
+brew install latexindent
+```
+
+## References
+- [MikTex: Download](https://miktex.org/download)
