@@ -57,6 +57,7 @@ danfault = "danfault"
 
 [project.scripts]
 danfault = "danfault.main:main"
+rmatlab = "danfault.matlab:main"
 
 [tool.pytest.ini_options]
 addopts = "--cov=mleng --cov-report xml --cov-report term-missing"# --cov-fail-under 95"
