@@ -43,3 +43,8 @@ echo -e Setting documents dir to: $DOCUMENTS_DIR
 # source $DANFAULT_DIR/dotfiles/.extra
 # source $DANFAULT_DIR/dotfiles/.source
 
+
+# Installs github cli
+# brew install zoxide
+# brew install gh
+# gh alias set pr_files "pr view $1 --json files --jq '.files.[].path'"

@@ -17,7 +17,9 @@ alias g='git'
 
 # Virtual Envs
 alias ml='source $HOME/.venvs/ml/bin/activate'
-alias dan='source $HOME/.venvs/dan/bin/activate'
+# alias dan='source $HOME/.venvs/dan/bin/activate'
+alias dan='conda activate dan'
+alias ghdan='eval "$(ssh-agent -s)" && ssh-add  ~/.ssh/id_ed25519_gh'
 
 # Folders
 alias documents='cd $HOME/Documents'
@@ -26,4 +28,3 @@ alias zsh_reload='source ~/.zshrc'
 alias wheather='curl https://wttr.in'
 alias proj='cd ~/Documents/projects/pessoal'
 alias eeg_folder='cd ~/Documents/projects/pessoal/topics_eeg/'
-
