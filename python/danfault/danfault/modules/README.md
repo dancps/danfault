@@ -1,3 +1,5 @@
+# NOTE: this might be removed
+
 Add a way of decide how the argparse section works. Example:
     [1] Single input            -> myprof x
     [2] Multiple input          -> myprof x y z
