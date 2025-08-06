@@ -38,6 +38,15 @@ sudo apt install ubuntu-desktop
 reboot
 ```
 
+```bash
+# Installs mactex
+
+
+# Then the installer suggests:
+eval "$(/usr/libexec/path_helper)"
+```
+
+
 In MacOS: 
 ```sh
 brew install latexindent

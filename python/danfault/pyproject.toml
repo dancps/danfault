@@ -56,7 +56,7 @@ doc = [
 danfault = "danfault"
 
 [project.scripts]
-danfault = "danfault.main:main"
+danfault = "danfault.main:app"
 rmatlab = "danfault.matlab:main"
 
 [tool.pytest.ini_options]

@@ -1,8 +1,14 @@
 from danfault.logs import Loggir
 import os
+import typer
+from danfault import csvutils
+app = typer.Typer()
 
-def main():
+# Optionally, you can add commands to the app here or in other modules and import them.
+app.add_typer(csvutils.app, name="csv")
 
+@app.command()
+def hello_world():
     log = Loggir()
 
     log.debug("DEBUG")

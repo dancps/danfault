@@ -34,3 +34,14 @@ else
    # assume something else
    echo "Not a valid shell.(Check for .extra file in order to debug)"
 fi
+
+eval "$(zoxide init zsh)"
+
+# if ! gh --version 2>&1 >/dev/null
+# then
+#   echo "gh is not installed. Please install it."
+#     # exit 1
+# else
+#   echo "setting alias"
+#   gh alias set pr_files "pr view $1 --json files --jq '.files.[].path'"
+# fi
