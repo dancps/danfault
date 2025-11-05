@@ -27,7 +27,7 @@ def main():
 
     matlab_cmd = f"matlab -nodesktop -nosplash -r '{matlab_script}'" 
     print(f"Running {bold(matlab_cmd)}")
-
+    
     os.system(matlab_cmd)
 
 if(__name__=='__main__'):
