@@ -52,12 +52,17 @@ doc = [
     "jinja2==3.0.3"
 ]
 
+gui = [
+    "PyQt6"
+]
+
 [tool.setuptools.package-dir]
 danfault = "danfault"
 
 [project.scripts]
 danfault = "danfault.main:app"
 rmatlab = "danfault.matlab:main"
+coffee = "danfault.coffee:main"
 
 [tool.pytest.ini_options]
 addopts = "--cov=mleng --cov-report xml --cov-report term-missing"# --cov-fail-under 95"
