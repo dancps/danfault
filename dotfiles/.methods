@@ -7,3 +7,11 @@ review-pr() {
   - Check if there is anything to be added in the PR description
   Be concise and actionable."
   }
+
+find-folder() {
+  find "${2:-.}" -type d -iname "*$1*" 2>/dev/null
+}
+
+find-file() {
+  find "${2:-.}" -type f -iname "*$1*" 2>/dev/null
+}
