@@ -1,0 +1,9 @@
+review-pr() {
+    gh pr diff "$1" | claude -p "You are a senior code reviewer. Review this diff for:
+  - Bugs and logic errors
+  - Security vulnerabilities
+  - Performance issues
+  - Code style and readability
+  - Check if there is anything to be added in the PR description
+  Be concise and actionable."
+  }

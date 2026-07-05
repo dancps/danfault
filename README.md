@@ -1,5 +1,10 @@
 # danfault
- a
+
+Personal dotfiles and tools.
+
+## Tools
+
+- **[coffee](docs/coffee.md)** — GUI calculator for coffee-to-water proportions, with recipe presets.
 
 
 
