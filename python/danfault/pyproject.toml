@@ -17,7 +17,10 @@ classifiers = [
 dependencies = [
     "termcolor",
     "tqdm",
-    "numpy"
+    "numpy",
+    "requests",
+    "questionary",
+    "pyyaml"
 ]
 [project.urls]
 "Homepage" = "https://github.com/dancps/danfault"
@@ -63,6 +66,7 @@ danfault = "danfault"
 danfault = "danfault.main:app"
 rmatlab = "danfault.matlab:main"
 coffee = "danfault.coffee:main"
+spoti = "danfault.spotify:app"
 
 [tool.pytest.ini_options]
 addopts = "--cov=mleng --cov-report xml --cov-report term-missing"# --cov-fail-under 95"
