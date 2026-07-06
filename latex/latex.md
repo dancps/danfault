@@ -2,6 +2,7 @@
 - [Using Latexmk](https://mg.readthedocs.io/latexmk.html)
 - [How does Overleaf compile my project?](https://www.overleaf.com/learn/how-to/How_does_Overleaf_compile_my_project%3F)
 - [Specify -output-directory when using latexmk](https://tex.stackexchange.com/questions/11710/specify-output-directory-when-using-latexmk)
+- [Using ](https://tex.stackexchange.com/questions/462365/how-to-use-latex-on-vs-code)
 <!-- - []()
 - []()
 - []()
