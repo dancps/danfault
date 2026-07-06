@@ -133,3 +133,9 @@ dmypy.json
 # Pyre type checker
 .pyre/
 .idea
+
+# Node
+node_modules/
+
+# Generated / sensitive local data (holds plaintext Obsidian note chunks)
+python/obsidian-mcp/data/
