@@ -12,8 +12,8 @@ Use when starting a new project that warrants tracking in the vault.
 
 ## Usage
 ```
-/project-init
-/project-init "my-project"
+/obsidian-vault:project-init
+/obsidian-vault:project-init "my-project"
 ```
 
 ## Instructions

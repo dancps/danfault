@@ -10,20 +10,20 @@ Use at the end of a session to identify content worth preserving in the vault.
 
 ## Usage
 ```
-/vault-session-review
+/obsidian-vault:vault-session-review
 ```
 
 ## Instructions
 
 1. **Review the session** across three dimensions:
 
-   **A — Durable knowledge** (goes to `learnings/`, `03-resources/`, or `00-inbox/` via `/capture`):
+   **A — Durable knowledge** (goes to `learnings/`, `03-resources/`, or `00-inbox/` via `/obsidian-vault:capture`):
    - Learnings: how something works, a platform behavior, a framework detail
    - Decisions: architectural or design choices made with rationale
    - Debugging patterns: root causes found, investigation steps that worked
    - Reference material: commands, configs, or workflows that would be useful again
 
-   **B — Operational output** (goes to `reports/` via `/vault-report`):
+   **B — Operational output** (goes to `reports/` via `/obsidian-vault:vault-report`):
    - Commits made and what they fixed
    - Execution IDs, run IDs, adhoc job IDs
    - Output locations (S3 paths, notebook paths, table names)
@@ -53,7 +53,7 @@ Use at the end of a session to identify content worth preserving in the vault.
    - Commits: abc1234 (null fix), def5678 (NaN guard)
    - Adhoc: execution <run-id>, S3 paths for the outputs
    - Branches: you/feature-branch (<work-repo>)
-   → Suggest: /vault-report my-project
+   → Suggest: /obsidian-vault:vault-report my-project
 
    Project status update (01-projects/my-project/status.md):
    - Feature A: ✅ DONE (PR #12345)
@@ -65,7 +65,7 @@ Use at the end of a session to identify content worth preserving in the vault.
 
 4. **Handle each section:**
 
-   For **durable captures** — ask "Want to capture this?" for each item and run `/capture`:
+   For **durable captures** — ask "Want to capture this?" for each item and run `/obsidian-vault:capture`:
    ```bash
    VAULT_PATH="$(danfault vault path)" \
    DB_PATH=~/danfault/python/obsidian-mcp/data/vectors.db \
@@ -74,6 +74,6 @@ Use at the end of a session to identify content worth preserving in the vault.
    ```
    Or write directly to the appropriate project folder if it already exists in the vault.
 
-   For **operational output** — ask "Want to write a session report?" and if yes, invoke `/vault-report` with the project name pre-filled.
+   For **operational output** — ask "Want to write a session report?" and if yes, invoke `/obsidian-vault:vault-report` with the project name pre-filled.
 
    For **project status** — ask "Want to update status.md?" and if yes, **overwrite** (do not append) `01-projects/<project>/status.md` with the new state. The file must always reflect current reality, not accumulated history. Keep the same structure as the existing file: per-op validation table, detail sections for blocked items, recent commits, next session steps, and persistent operational notes (clusters, permissions). Update the `Last updated:` line to today's date.

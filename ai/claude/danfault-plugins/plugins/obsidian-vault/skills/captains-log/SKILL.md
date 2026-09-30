@@ -12,7 +12,7 @@ Pulls recent git commits from your configured repos and writes a structured dail
 
 ## Usage
 ```
-/captains-log
+/obsidian-vault:captains-log
 ```
 
 ## Instructions

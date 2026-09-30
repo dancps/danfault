@@ -10,7 +10,7 @@ Show all available vault commands.
 
 ## Usage
 ```
-/vault-help
+/obsidian-vault:vault-help
 ```
 
 ## Instructions
@@ -41,14 +41,14 @@ machine and across separate work/personal vaults.
 
 | Command | When to use |
 |---|---|
-| `/capture` | Save a quick insight or note to `00-inbox/` with frontmatter |
-| `/captains-log` | Pull today's work-repo git activity → write a journal entry to `06-daily/` |
-| `/obsidian-index` | Manually reindex the vault (use after editing notes outside Claude) |
-| `/obsidian-index --full` | Full reindex — clears and rebuilds the entire index |
-| `/vault-session-review` | Review session: suggest captures, report, and **update `status.md`** |
-| `/vault-report` | Write a dated session report to a project's `reports/` folder |
-| `/project-init` | Scaffold a new project in `01-projects/` with SUMMARY.md + folders |
-| `/vault-help` | Show this reference |
+| `/obsidian-vault:capture` | Save a quick insight or note to `00-inbox/` with frontmatter |
+| `/obsidian-vault:captains-log` | Pull today's work-repo git activity → write a journal entry to `06-daily/` |
+| `/obsidian-vault:obsidian-index` | Manually reindex the vault (use after editing notes outside Claude) |
+| `/obsidian-vault:obsidian-index --full` | Full reindex — clears and rebuilds the entire index |
+| `/obsidian-vault:vault-session-review` | Review session: suggest captures, report, and **update `status.md`** |
+| `/obsidian-vault:vault-report` | Write a dated session report to a project's `reports/` folder |
+| `/obsidian-vault:project-init` | Scaffold a new project in `01-projects/` with SUMMARY.md + folders |
+| `/obsidian-vault:vault-help` | Show this reference |
 
 ### MCP Tools (available in any Claude session)
 
@@ -69,7 +69,7 @@ machine and across separate work/personal vaults.
 
 ```
 vault/
-├── 00-inbox/       New notes land here (via /capture or manual triage)
+├── 00-inbox/       New notes land here (via /obsidian-vault:capture or manual triage)
 ├── 01-projects/    Active and past projects (SUMMARY + status + learnings + reports)
 ├── 02-areas/       Ongoing responsibilities (policies, troubleshooting, tool ideas)
 ├── 03-resources/   Reference material (tools, frameworks, setup notes)
