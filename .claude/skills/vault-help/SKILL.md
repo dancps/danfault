@@ -32,6 +32,7 @@ Locations and domains are read from a machine-local config (never committed):
 | `danfault vault domains [--vault NAME]` | The vault's declared note domains, one per line |
 | `danfault vault repos [--github]` | Every configured repo's path (or `owner/repo` slug) |
 | `danfault vault repo NAME [--github]` | One repo's path (or its `owner/repo` slug) |
+| `danfault vault init NAME --path DIR [--domain D]... [--default]` | Create a vault with the standard layout and register it in the config |
 
 Skills use these instead of hardcoding paths, so the same skill works on any
 machine and across separate work/personal vaults.

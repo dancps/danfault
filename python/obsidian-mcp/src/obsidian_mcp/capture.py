@@ -14,6 +14,15 @@ from datetime import datetime
 from pathlib import Path
 
 
+def _yaml_str(value: str) -> str:
+    """Quote a scalar so YAML parses it whatever it contains.
+
+    An unquoted title holding a colon (``Recount test: why``) is invalid YAML and breaks every
+    consumer of the note's frontmatter.
+    """
+    return '"' + value.replace("\\", "\\\\").replace('"', '\\"') + '"'
+
+
 def capture(
     text: str,
     title: str | None = None,
@@ -37,9 +46,9 @@ def capture(
 
     tags_yaml = ", ".join(f'"{t}"' for t in (tags or []))
     content = f"""---
-title: {display_title}
+title: {_yaml_str(display_title)}
 type: note
-domain: {domain or ""}
+domain: {_yaml_str(domain or "")}
 tags: [{tags_yaml}]
 status: draft
 created: {now.strftime("%Y-%m-%d")}
@@ -58,9 +67,11 @@ created: {now.strftime("%Y-%m-%d")}
             text=True,
         )
         if result.returncode != 0:
-            print(f"Warning: reindex failed — {result.stderr.strip()}", file=sys.stderr)
-        else:
-            print(result.stdout.strip())
+            # Exit non-zero: a silent reindex failure leaves the note unsearchable while the
+            # capture still looks like it succeeded.
+            print(f"Error: reindex failed — {result.stderr.strip()}", file=sys.stderr)
+            sys.exit(1)
+        print(result.stdout.strip())
 
     return note_path
 
