@@ -139,3 +139,6 @@ node_modules/
 
 # Generated / sensitive local data (holds plaintext Obsidian note chunks)
 python/obsidian-mcp/data/
+
+# /commit skill draft commit messages (see ai/claude/skills/commit/SKILL.md)
+tmp/
