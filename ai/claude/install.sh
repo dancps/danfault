@@ -119,6 +119,16 @@ else
   cat "$CLAUDE_DIR/settings.json"
 fi
 
+# The vault skills call the `danfault` CLI. Reinstall it on every run: editable
+# installs pick up code changes, but not new entry points or dependencies.
+DANFAULT_PKG=$(readlink -f "$CLAUDE_DIR/../../python/danfault")
+if command -v uv >/dev/null 2>&1; then
+  uv tool install --editable --reinstall "$DANFAULT_PKG"
+else
+  echo "uv not found on PATH — install the danfault CLI manually later with:"
+  echo "  uv tool install --editable --reinstall \"$DANFAULT_PKG\""
+fi
+
 # Register the personal plugin marketplace (no-op if already added).
 if command -v claude >/dev/null 2>&1; then
   claude plugin marketplace add "$CLAUDE_DIR/danfault-plugins" 2>&1 || true

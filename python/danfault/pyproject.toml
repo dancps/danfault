@@ -20,7 +20,9 @@ dependencies = [
     "numpy",
     "requests",
     "questionary",
-    "pyyaml"
+    "pyyaml",
+    "typer",
+    "pandas"
 ]
 [project.urls]
 "Homepage" = "https://github.com/dancps/danfault"
