@@ -91,11 +91,13 @@ def index_vault(vault_path: Path, db_path: Path, full: bool = False) -> None:
 
     md_files = sorted(vault_path.rglob("*.md"))
     indexed = skipped = 0
+    seen: set[str] = set()
 
     for md_file in md_files:
         rel = md_file.relative_to(vault_path)
         if spec.match_file(str(rel)):
             continue
+        seen.add(str(rel))
 
         mtime = md_file.stat().st_mtime
 
@@ -152,7 +154,12 @@ def index_vault(vault_path: Path, db_path: Path, full: bool = False) -> None:
 
         conn.commit()
 
-    print(f"Done. {indexed} chunks indexed, {skipped} files unchanged.")
+    # Notes deleted (or newly ignored) since the last run would otherwise stay searchable forever.
+    stale = [r[0] for r in conn.execute("SELECT DISTINCT file_path FROM chunks") if r[0] not in seen]
+    conn.executemany("DELETE FROM chunks WHERE file_path = ?", [(f,) for f in stale])
+    conn.commit()
+
+    print(f"Done. {indexed} chunks indexed, {skipped} files unchanged, {len(stale)} files removed.")
     conn.close()
 
 

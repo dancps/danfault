@@ -16,6 +16,7 @@ class HybridRetriever:
         self._load()
 
     def _load(self) -> None:
+        self.db_mtime = Path(self.db_path).stat().st_mtime
         conn = sqlite3.connect(self.db_path)
         conn.row_factory = sqlite3.Row
         rows = conn.execute(

@@ -36,9 +36,13 @@ def _indexed_vault(name: str) -> config.Vault:
 
 
 def get_retriever(v: config.Vault) -> HybridRetriever:
-    if v.db not in _retrievers:
-        _retrievers[v.db] = HybridRetriever(db_path=str(v.db), vault_path=str(v.path))
-    return _retrievers[v.db]
+    retriever = _retrievers.get(v.db)
+    if retriever is None:
+        retriever = _retrievers[v.db] = HybridRetriever(db_path=str(v.db), vault_path=str(v.path))
+    elif v.db.stat().st_mtime != retriever.db_mtime:
+        # The indexer runs as a separate process; pick up its writes without a server restart.
+        retriever.reload()
+    return retriever
 
 
 def _safe_path(vault_path: Path, file_path: str) -> Path | None:
