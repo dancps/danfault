@@ -31,8 +31,6 @@ Use when the user wants to save an insight, reference, or note from the current 
 
 3. **Run the capture tool:**
    ```bash
-   VAULT_PATH="$(danfault vault path)" \
-   DB_PATH=~/danfault/python/obsidian-mcp/data/vectors.db \
    uv run --project ~/danfault/python/obsidian-mcp \
      obsidian-capture "<content>" \
      --title "<title>" \

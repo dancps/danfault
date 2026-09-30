@@ -2,11 +2,10 @@
 Index an Obsidian vault into SQLite with BM25 tokens and embeddings.
 
 Usage:
-    VAULT_PATH=... DB_PATH=... obsidian-index [--full]
+    obsidian-index [--vault NAME] [--full]
 """
 import argparse
 import json
-import os
 import re
 import sqlite3
 import sys
@@ -16,6 +15,8 @@ import frontmatter
 import numpy as np
 import pathspec
 from model2vec import StaticModel
+
+from obsidian_mcp import config
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS chunks (
@@ -158,16 +159,16 @@ def index_vault(vault_path: Path, db_path: Path, full: bool = False) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Index Obsidian vault into SQLite")
     parser.add_argument("--full", action="store_true", help="Full reindex (ignore mtimes)")
-    parser.add_argument("--vault", default=os.environ.get("VAULT_PATH"), help="Vault path")
-    parser.add_argument("--db", default=os.environ.get("DB_PATH"), help="SQLite DB path")
+    parser.add_argument("--vault", help="Vault name from ~/.config/danfault/vault.yaml (default: default_vault)")
     args = parser.parse_args()
 
-    if not args.vault:
-        parser.error("VAULT_PATH env var or --vault required")
-    if not args.db:
-        parser.error("DB_PATH env var or --db required")
+    try:
+        v = config.resolve(args.vault)
+    except ValueError as e:
+        parser.error(str(e))
 
-    index_vault(Path(args.vault), Path(args.db), full=args.full)
+    print(f"Indexing vault '{v.name}' ({v.path}) into {v.db}")
+    index_vault(v.path, v.db, full=args.full)
 
 
 if __name__ == "__main__":

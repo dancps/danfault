@@ -12,25 +12,22 @@ Use when notes have been added or edited and you want them immediately available
 ```
 /obsidian-vault:obsidian-index
 /obsidian-vault:obsidian-index --full
+/obsidian-vault:obsidian-index --vault NAME
 ```
 
 ## Instructions
 
-1. **Check for `--full` flag** — if present, do a full reindex (clears and rebuilds). Otherwise do incremental (only changed files).
+1. **Check for `--full` flag** — if present, do a full reindex (clears and rebuilds). Otherwise do incremental (only changed files). If `--vault NAME` is given, append it to the command below; without it, the indexer uses `default_vault` from `~/.config/danfault/vault.yaml`.
 
 2. **Run the indexer:**
 
    Incremental:
    ```bash
-   VAULT_PATH="$(danfault vault path)" \
-   DB_PATH=~/danfault/python/obsidian-mcp/data/vectors.db \
    uv run --project ~/danfault/python/obsidian-mcp obsidian-index
    ```
 
    Full:
    ```bash
-   VAULT_PATH="$(danfault vault path)" \
-   DB_PATH=~/danfault/python/obsidian-mcp/data/vectors.db \
    uv run --project ~/danfault/python/obsidian-mcp obsidian-index --full
    ```
 

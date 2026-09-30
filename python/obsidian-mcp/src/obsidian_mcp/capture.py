@@ -3,15 +3,15 @@ Capture a note into the vault's 00-inbox/ with proper frontmatter,
 then trigger an incremental reindex so it's immediately searchable.
 
 Usage:
-    obsidian-capture "Some insight" --title "OAuth rotation" --domain security --tags oauth tokens
+    obsidian-capture "Some insight" [--vault NAME] --title "OAuth rotation" --domain security --tags oauth tokens
 """
 import argparse
-import os
 import re
-import subprocess
-import sys
 from datetime import datetime
 from pathlib import Path
+
+from obsidian_mcp import config
+from obsidian_mcp.indexer import index_vault
 
 
 def _yaml_str(value: str) -> str:
@@ -28,12 +28,12 @@ def capture(
     title: str | None = None,
     domain: str | None = None,
     tags: list[str] | None = None,
-    vault_path: str | None = None,
-    db_path: str | None = None,
+    vault_name: str | None = None,
 ) -> Path:
-    vault = Path(vault_path or os.environ.get("VAULT_PATH", ""))
-    if not vault or not vault.exists():
-        raise ValueError("VAULT_PATH is not set or does not exist")
+    v = config.resolve(vault_name)
+    vault = v.path
+    if not vault.exists():
+        raise ValueError(f"Vault '{v.name}' path does not exist: {vault}")
 
     inbox = vault / "00-inbox"
     inbox.mkdir(exist_ok=True)
@@ -59,19 +59,7 @@ created: {now.strftime("%Y-%m-%d")}
     note_path.write_text(content, encoding="utf-8")
     print(f"Created: {note_path.relative_to(vault)}")
 
-    db = db_path or os.environ.get("DB_PATH", "")
-    if db:
-        result = subprocess.run(
-            ["uv", "run", "obsidian-index", "--vault", str(vault), "--db", db],
-            capture_output=True,
-            text=True,
-        )
-        if result.returncode != 0:
-            # Exit non-zero: a silent reindex failure leaves the note unsearchable while the
-            # capture still looks like it succeeded.
-            print(f"Error: reindex failed — {result.stderr.strip()}", file=sys.stderr)
-            sys.exit(1)
-        print(result.stdout.strip())
+    index_vault(vault, v.db)
 
     return note_path
 
@@ -82,18 +70,19 @@ def main() -> None:
     parser.add_argument("--title", help="Note title (defaults to timestamp)")
     parser.add_argument("--domain", help="Domain tag, e.g. credit-card, data-platform")
     parser.add_argument("--tags", nargs="*", default=[], help="Additional tags")
-    parser.add_argument("--vault", default=os.environ.get("VAULT_PATH"), help="Vault path")
-    parser.add_argument("--db", default=os.environ.get("DB_PATH"), help="SQLite DB path")
+    parser.add_argument("--vault", help="Vault name from ~/.config/danfault/vault.yaml (default: default_vault)")
     args = parser.parse_args()
 
-    capture(
-        text=args.text,
-        title=args.title,
-        domain=args.domain,
-        tags=args.tags,
-        vault_path=args.vault,
-        db_path=args.db,
-    )
+    try:
+        capture(
+            text=args.text,
+            title=args.title,
+            domain=args.domain,
+            tags=args.tags,
+            vault_name=args.vault,
+        )
+    except ValueError as e:
+        parser.error(str(e))
 
 
 if __name__ == "__main__":
