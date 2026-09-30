@@ -10,8 +10,8 @@ Use when notes have been added or edited and you want them immediately available
 
 ## Usage
 ```
-/obsidian-index
-/obsidian-index --full
+/obsidian-vault:obsidian-index
+/obsidian-vault:obsidian-index --full
 ```
 
 ## Instructions

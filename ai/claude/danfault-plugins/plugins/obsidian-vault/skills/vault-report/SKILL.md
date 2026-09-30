@@ -12,8 +12,8 @@ Write a session report to `01-projects/<name>/reports/` in the vault.
 
 ## Usage
 ```
-/vault-report
-/vault-report my-project
+/obsidian-vault:vault-report
+/obsidian-vault:vault-report my-project
 ```
 
 ## Instructions

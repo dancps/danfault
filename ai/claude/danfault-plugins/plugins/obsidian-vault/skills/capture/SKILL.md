@@ -10,13 +10,13 @@ Use when the user wants to save an insight, reference, or note from the current 
 
 ## Usage
 ```
-/capture
-/capture "Some insight about X"
+/obsidian-vault:capture
+/obsidian-vault:capture "Some insight about X"
 ```
 
 ## Instructions
 
-1. **Get the content** — if the user passed text after `/capture`, use that. Otherwise ask: "What would you like to capture?"
+1. **Get the content** — if the user passed text after `/obsidian-vault:capture`, use that. Otherwise ask: "What would you like to capture?"
 
    If the content is vague or the user says "from the session" or "from recent work", you may read existing reports in the relevant project's `reports/` folder to gather context:
    ```bash

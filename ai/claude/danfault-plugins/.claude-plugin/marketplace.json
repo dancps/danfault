@@ -1,0 +1,24 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "danfault-plugins",
+  "description": "Danilo Calhes' personal Claude Code plugins from the danfault repo",
+  "owner": {
+    "name": "Danilo Calhes"
+  },
+  "plugins": [
+    {
+      "name": "introduce-me",
+      "description": "Personal skill that introduces the user to a new topic in a fixed 4-section format: title/metadata, pre-requisites, short explanation, and full explanation.",
+      "source": "./plugins/introduce-me",
+      "category": "learning",
+      "version": "0.1.0"
+    },
+    {
+      "name": "obsidian-vault",
+      "description": "Skills to work with an Obsidian vault: capture notes, write daily logs and session reports, scaffold projects, and reindex the obsidian-mcp search index. Resolves vault paths with `danfault vault`.",
+      "source": "./plugins/obsidian-vault",
+      "category": "productivity",
+      "version": "0.1.0"
+    }
+  ]
+}

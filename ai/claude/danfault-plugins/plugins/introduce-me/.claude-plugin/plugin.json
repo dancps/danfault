@@ -1,0 +1,8 @@
+{
+  "name": "introduce-me",
+  "version": "0.1.0",
+  "description": "Personal skill that introduces the user to a new topic in a fixed 4-section format: title/metadata, pre-requisites, short explanation, and full explanation.",
+  "author": {
+    "name": "Danilo Calhes"
+  }
+}
