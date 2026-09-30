@@ -28,3 +28,6 @@ alias zsh_reload='source ~/.zshrc'
 alias wheather='curl https://wttr.in'
 alias proj='cd ~/Documents/projects/pessoal'
 alias eeg_folder='cd ~/Documents/projects/pessoal/topics_eeg/'
+
+# Make sure for UV
+export PATH="$HOME/.local/bin:$PATH"
