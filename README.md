@@ -10,11 +10,10 @@ Personal dotfiles and tools.
 ## Install (Python tools)
 
 ```bash
-cd python/danfault
-pip install -e .
+uv tool install --editable --reinstall python/danfault
 ```
 
-Registers: `danfault`, `spoti`, `coffee`, `rmatlab`.
+Registers: `danfault`, `spoti`, `coffee`, `rmatlab` in `~/.local/bin`, in their own environment. Code changes apply immediately; rerun the command after changing entry points or dependencies in `pyproject.toml`. `ai/claude/install.sh` runs it too.
 
 ## Cedilla problem
 [This](https://www.danielkossmann.com/pt/ajeitando-cedilha-errado-ubuntu-linux/) fixed the problem for me in Ubuntu.

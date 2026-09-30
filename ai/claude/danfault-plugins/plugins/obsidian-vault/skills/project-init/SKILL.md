@@ -76,8 +76,6 @@ Use when starting a new project that warrants tracking in the vault.
 
 5. **Trigger reindex:**
    ```bash
-   VAULT_PATH="$(danfault vault path)" \
-   DB_PATH=~/danfault/python/obsidian-mcp/data/vectors.db \
    uv run --project ~/danfault/python/obsidian-mcp obsidian-index
    ```
 

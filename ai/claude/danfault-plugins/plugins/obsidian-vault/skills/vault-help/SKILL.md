@@ -52,8 +52,11 @@ machine and across separate work/personal vaults.
 
 ### MCP Tools (available in any Claude session)
 
+One `obsidian` MCP server serves every vault in `~/.config/danfault/vault.yaml`. Each tool below (except `obsidian_list_vaults`) takes an optional `vault` name; without it, `default_vault` is used.
+
 | Tool | What it does |
 |---|---|
+| `obsidian_list_vaults` | List the registered vaults, the default, and which are not indexed yet |
 | `obsidian_search` | Hybrid BM25 + semantic search across the vault |
 | `obsidian_read_note` | Read a full note by vault-relative path |
 | `obsidian_list_notes` | List notes filtered by folder or tag |

@@ -65,8 +65,6 @@ Pulls recent git commits from your configured repos and writes a structured dail
 
 6. **Reindex** — run incremental reindex so the entry is immediately searchable:
    ```bash
-   VAULT_PATH="$(danfault vault path)" \
-   DB_PATH=~/danfault/python/obsidian-mcp/data/vectors.db \
    uv run --project ~/danfault/python/obsidian-mcp obsidian-index
    ```
 

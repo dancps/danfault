@@ -13,6 +13,7 @@ Schema::
       main:
         path: ~/path/to/vault
         domains: [domain-a, domain-b, personal]
+        db: ~/path/to/main.db   # optional search index; read by obsidian-mcp
     repos:
       my-repo: { path: ~/path/to/repo, github: owner/my-repo }
 
@@ -319,12 +320,8 @@ def init(
         typer.echo(f"Registered vault '{name}' in {_config_path()}")
 
     mcp_project = Path(__file__).resolve().parents[2] / "obsidian-mcp"
-    db = mcp_project / "data" / f"{name}.db"
     typer.echo("\nNext steps:")
     typer.echo("  1. Build the search index:")
-    typer.echo(f'     VAULT_PATH="{root}" DB_PATH="{db}" uv run --project "{mcp_project}" obsidian-index --full')
-    typer.echo("  2. Register the MCP server with Claude Code:")
-    typer.echo(
-        f'     claude mcp add obsidian-{name} --scope user -e VAULT_PATH="{root}" -e DB_PATH="{db}"'
-        f' -- uv run --project "{mcp_project}" obsidian-mcp'
-    )
+    typer.echo(f'     uv run --project "{mcp_project}" obsidian-index --vault {name} --full')
+    typer.echo("  2. If not done yet on this machine, register the MCP server once (it serves every vault in the config):")
+    typer.echo(f'     claude mcp add obsidian --scope user -- uv run --project "{mcp_project}" obsidian-mcp')

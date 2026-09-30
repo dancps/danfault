@@ -67,8 +67,6 @@ Use at the end of a session to identify content worth preserving in the vault.
 
    For **durable captures** — ask "Want to capture this?" for each item and run `/obsidian-vault:capture`:
    ```bash
-   VAULT_PATH="$(danfault vault path)" \
-   DB_PATH=~/danfault/python/obsidian-mcp/data/vectors.db \
    uv run --project ~/danfault/python/obsidian-mcp \
      obsidian-capture "<content>" --title "<title>" --domain "<domain>" --tags <tags>
    ```

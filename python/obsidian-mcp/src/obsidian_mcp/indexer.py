@@ -2,11 +2,10 @@
 Index an Obsidian vault into SQLite with BM25 tokens and embeddings.
 
 Usage:
-    VAULT_PATH=... DB_PATH=... obsidian-index [--full]
+    obsidian-index [--vault NAME] [--full]
 """
 import argparse
 import json
-import os
 import re
 import sqlite3
 import sys
@@ -16,6 +15,8 @@ import frontmatter
 import numpy as np
 import pathspec
 from model2vec import StaticModel
+
+from obsidian_mcp import config
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS chunks (
@@ -90,11 +91,13 @@ def index_vault(vault_path: Path, db_path: Path, full: bool = False) -> None:
 
     md_files = sorted(vault_path.rglob("*.md"))
     indexed = skipped = 0
+    seen: set[str] = set()
 
     for md_file in md_files:
         rel = md_file.relative_to(vault_path)
         if spec.match_file(str(rel)):
             continue
+        seen.add(str(rel))
 
         mtime = md_file.stat().st_mtime
 
@@ -151,23 +154,28 @@ def index_vault(vault_path: Path, db_path: Path, full: bool = False) -> None:
 
         conn.commit()
 
-    print(f"Done. {indexed} chunks indexed, {skipped} files unchanged.")
+    # Notes deleted (or newly ignored) since the last run would otherwise stay searchable forever.
+    stale = [r[0] for r in conn.execute("SELECT DISTINCT file_path FROM chunks") if r[0] not in seen]
+    conn.executemany("DELETE FROM chunks WHERE file_path = ?", [(f,) for f in stale])
+    conn.commit()
+
+    print(f"Done. {indexed} chunks indexed, {skipped} files unchanged, {len(stale)} files removed.")
     conn.close()
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Index Obsidian vault into SQLite")
     parser.add_argument("--full", action="store_true", help="Full reindex (ignore mtimes)")
-    parser.add_argument("--vault", default=os.environ.get("VAULT_PATH"), help="Vault path")
-    parser.add_argument("--db", default=os.environ.get("DB_PATH"), help="SQLite DB path")
+    parser.add_argument("--vault", help="Vault name from ~/.config/danfault/vault.yaml (default: default_vault)")
     args = parser.parse_args()
 
-    if not args.vault:
-        parser.error("VAULT_PATH env var or --vault required")
-    if not args.db:
-        parser.error("DB_PATH env var or --db required")
+    try:
+        v = config.resolve(args.vault)
+    except ValueError as e:
+        parser.error(str(e))
 
-    index_vault(Path(args.vault), Path(args.db), full=args.full)
+    print(f"Indexing vault '{v.name}' ({v.path}) into {v.db}")
+    index_vault(v.path, v.db, full=args.full)
 
 
 if __name__ == "__main__":
