@@ -1,0 +1,582 @@
+{
+  "playlist": {
+    "id": "6daUP1z3VZCaDFcatFd8gW",
+    "name": "😭😿corremo😿😭",
+    "description": "",
+    "owner": "Danilo Calhes",
+    "total": 26,
+    "snapshot_id": "AAAAH+gcV4GB27A68GN9B4Hj5nXEjSL0"
+  },
+  "tracks": [
+    {
+      "added_at": "2026-06-13T15:31:48Z",
+      "id": "2vNSdBUwupb3WbbJsVEc4d",
+      "name": "Absolutamente Nada",
+      "uri": "spotify:track:2vNSdBUwupb3WbbJsVEc4d",
+      "duration_ms": 230880,
+      "popularity": 41,
+      "explicit": false,
+      "artists": [
+        {
+          "id": "2sFXe6NbmT3k7Qy4N8fE7f",
+          "name": "Fresno"
+        }
+      ],
+      "album": {
+        "id": "3LfBdvxxInsz67JEFGsZnO",
+        "name": "Ciano",
+        "release_date": "2006-06-01"
+      },
+      "url": "https://open.spotify.com/track/2vNSdBUwupb3WbbJsVEc4d"
+    },
+    {
+      "added_at": "2026-06-13T15:35:04Z",
+      "id": "2b0wKFAud3JEcm9Sm2pV3H",
+      "name": "Eu Nunca Fui Embora",
+      "uri": "spotify:track:2b0wKFAud3JEcm9Sm2pV3H",
+      "duration_ms": 185337,
+      "popularity": 45,
+      "explicit": false,
+      "artists": [
+        {
+          "id": "2sFXe6NbmT3k7Qy4N8fE7f",
+          "name": "Fresno"
+        }
+      ],
+      "album": {
+        "id": "518eTaR0LiBmCtyjepuLaB",
+        "name": "Eu Nunca Fui Embora",
+        "release_date": "2024-11-01"
+      },
+      "url": "https://open.spotify.com/track/2b0wKFAud3JEcm9Sm2pV3H"
+    },
+    {
+      "added_at": "2026-06-13T15:31:56Z",
+      "id": "2Anewlbuh2nnlUc0bxIKgU",
+      "name": "Cada Poça Dessa Rua Tem Um Pouco de Minhas Lágrimas",
+      "uri": "spotify:track:2Anewlbuh2nnlUc0bxIKgU",
+      "duration_ms": 354120,
+      "popularity": 49,
+      "explicit": false,
+      "artists": [
+        {
+          "id": "2sFXe6NbmT3k7Qy4N8fE7f",
+          "name": "Fresno"
+        }
+      ],
+      "album": {
+        "id": "3LfBdvxxInsz67JEFGsZnO",
+        "name": "Ciano",
+        "release_date": "2006-06-01"
+      },
+      "url": "https://open.spotify.com/track/2Anewlbuh2nnlUc0bxIKgU"
+    },
+    {
+      "added_at": "2026-06-13T15:31:30Z",
+      "id": "26VzA1ncohB7RMsxpXWaZx",
+      "name": "Quebre As Correntes",
+      "uri": "spotify:track:26VzA1ncohB7RMsxpXWaZx",
+      "duration_ms": 226466,
+      "popularity": 52,
+      "explicit": false,
+      "artists": [
+        {
+          "id": "2sFXe6NbmT3k7Qy4N8fE7f",
+          "name": "Fresno"
+        }
+      ],
+      "album": {
+        "id": "3LfBdvxxInsz67JEFGsZnO",
+        "name": "Ciano",
+        "release_date": "2006-06-01"
+      },
+      "url": "https://open.spotify.com/track/26VzA1ncohB7RMsxpXWaZx"
+    },
+    {
+      "added_at": "2026-06-13T15:33:37Z",
+      "id": "4WZw4CtU9BfMEBHR8KEfRK",
+      "name": "Hoje Sou Trovão",
+      "uri": "spotify:track:4WZw4CtU9BfMEBHR8KEfRK",
+      "duration_ms": 281197,
+      "popularity": 31,
+      "explicit": false,
+      "artists": [
+        {
+          "id": "2sFXe6NbmT3k7Qy4N8fE7f",
+          "name": "Fresno"
+        },
+        {
+          "id": "7HGNYPmbDrMkylWqeFCOIQ",
+          "name": "Caetano Veloso"
+        }
+      ],
+      "album": {
+        "id": "5jfwMd6mGG8rk9qHN7GDoy",
+        "name": "A Sinfonia de Tudo Que Há",
+        "release_date": "2016-10-13"
+      },
+      "url": "https://open.spotify.com/track/4WZw4CtU9BfMEBHR8KEfRK"
+    },
+    {
+      "added_at": "2026-06-13T15:30:24Z",
+      "id": "3Xx8DDgvddsYPnxTH2LXsd",
+      "name": "Desde Quando Você Se Foi",
+      "uri": "spotify:track:3Xx8DDgvddsYPnxTH2LXsd",
+      "duration_ms": 216226,
+      "popularity": 55,
+      "explicit": false,
+      "artists": [
+        {
+          "id": "2sFXe6NbmT3k7Qy4N8fE7f",
+          "name": "Fresno"
+        }
+      ],
+      "album": {
+        "id": "4j5DCqWtUEBoO1AFvgKjKF",
+        "name": "Redenção",
+        "release_date": "2008-01-01"
+      },
+      "url": "https://open.spotify.com/track/3Xx8DDgvddsYPnxTH2LXsd"
+    },
+    {
+      "added_at": "2026-06-13T15:30:24Z",
+      "id": "63QharyMHvx3yteCyRnkii",
+      "name": "Redenção",
+      "uri": "spotify:track:63QharyMHvx3yteCyRnkii",
+      "duration_ms": 227933,
+      "popularity": 50,
+      "explicit": false,
+      "artists": [
+        {
+          "id": "2sFXe6NbmT3k7Qy4N8fE7f",
+          "name": "Fresno"
+        }
+      ],
+      "album": {
+        "id": "4j5DCqWtUEBoO1AFvgKjKF",
+        "name": "Redenção",
+        "release_date": "2008-01-01"
+      },
+      "url": "https://open.spotify.com/track/63QharyMHvx3yteCyRnkii"
+    },
+    {
+      "added_at": "2026-06-13T15:30:59Z",
+      "id": "3vNirK8TosxVKYeZoXpIxv",
+      "name": "Polo",
+      "uri": "spotify:track:3vNirK8TosxVKYeZoXpIxv",
+      "duration_ms": 224333,
+      "popularity": 46,
+      "explicit": false,
+      "artists": [
+        {
+          "id": "2sFXe6NbmT3k7Qy4N8fE7f",
+          "name": "Fresno"
+        }
+      ],
+      "album": {
+        "id": "4j5DCqWtUEBoO1AFvgKjKF",
+        "name": "Redenção",
+        "release_date": "2008-01-01"
+      },
+      "url": "https://open.spotify.com/track/3vNirK8TosxVKYeZoXpIxv"
+    },
+    {
+      "added_at": "2026-06-13T15:30:59Z",
+      "id": "2MQnaXCrhHka2bXF2XBrkG",
+      "name": "Milonga",
+      "uri": "spotify:track:2MQnaXCrhHka2bXF2XBrkG",
+      "duration_ms": 301813,
+      "popularity": 47,
+      "explicit": false,
+      "artists": [
+        {
+          "id": "2sFXe6NbmT3k7Qy4N8fE7f",
+          "name": "Fresno"
+        }
+      ],
+      "album": {
+        "id": "4j5DCqWtUEBoO1AFvgKjKF",
+        "name": "Redenção",
+        "release_date": "2008-01-01"
+      },
+      "url": "https://open.spotify.com/track/2MQnaXCrhHka2bXF2XBrkG"
+    },
+    {
+      "added_at": "2026-06-13T15:32:38Z",
+      "id": "0oWedhi1GJEw3jynKjFaDr",
+      "name": "A Minha História Não Acaba Aqui",
+      "uri": "spotify:track:0oWedhi1GJEw3jynKjFaDr",
+      "duration_ms": 240053,
+      "popularity": 31,
+      "explicit": false,
+      "artists": [
+        {
+          "id": "2sFXe6NbmT3k7Qy4N8fE7f",
+          "name": "Fresno"
+        }
+      ],
+      "album": {
+        "id": "6SH5RNO347OXTrPndPUj52",
+        "name": "Revanche",
+        "release_date": "2010-01-01"
+      },
+      "url": "https://open.spotify.com/track/0oWedhi1GJEw3jynKjFaDr"
+    },
+    {
+      "added_at": "2026-06-13T15:32:38Z",
+      "id": "33Y1jukFR76pj7TXFTHQBJ",
+      "name": "Porto Alegre",
+      "uri": "spotify:track:33Y1jukFR76pj7TXFTHQBJ",
+      "duration_ms": 227973,
+      "popularity": 48,
+      "explicit": false,
+      "artists": [
+        {
+          "id": "2sFXe6NbmT3k7Qy4N8fE7f",
+          "name": "Fresno"
+        }
+      ],
+      "album": {
+        "id": "6SH5RNO347OXTrPndPUj52",
+        "name": "Revanche",
+        "release_date": "2010-01-01"
+      },
+      "url": "https://open.spotify.com/track/33Y1jukFR76pj7TXFTHQBJ"
+    },
+    {
+      "added_at": "2026-06-13T15:32:47Z",
+      "id": "1mkH2pZ8kUwCjeNfUE4drZ",
+      "name": "Infinito",
+      "uri": "spotify:track:1mkH2pZ8kUwCjeNfUE4drZ",
+      "duration_ms": 232278,
+      "popularity": 46,
+      "explicit": false,
+      "artists": [
+        {
+          "id": "2sFXe6NbmT3k7Qy4N8fE7f",
+          "name": "Fresno"
+        }
+      ],
+      "album": {
+        "id": "6wAEkrOV1p38k0tAUxGFGH",
+        "name": "Infinito",
+        "release_date": "2012-11-01"
+      },
+      "url": "https://open.spotify.com/track/1mkH2pZ8kUwCjeNfUE4drZ"
+    },
+    {
+      "added_at": "2026-06-13T15:32:51Z",
+      "id": "66LpfXw0JhxmaWs2RjoqVn",
+      "name": "Maior Que As Muralhas",
+      "uri": "spotify:track:66LpfXw0JhxmaWs2RjoqVn",
+      "duration_ms": 259079,
+      "popularity": 33,
+      "explicit": false,
+      "artists": [
+        {
+          "id": "2sFXe6NbmT3k7Qy4N8fE7f",
+          "name": "Fresno"
+        }
+      ],
+      "album": {
+        "id": "6wAEkrOV1p38k0tAUxGFGH",
+        "name": "Infinito",
+        "release_date": "2012-11-01"
+      },
+      "url": "https://open.spotify.com/track/66LpfXw0JhxmaWs2RjoqVn"
+    },
+    {
+      "added_at": "2026-06-13T15:32:53Z",
+      "id": "5eg601RYHLYUDQssIIfjDt",
+      "name": "Diga, parte 2",
+      "uri": "spotify:track:5eg601RYHLYUDQssIIfjDt",
+      "duration_ms": 266983,
+      "popularity": 51,
+      "explicit": false,
+      "artists": [
+        {
+          "id": "2sFXe6NbmT3k7Qy4N8fE7f",
+          "name": "Fresno"
+        }
+      ],
+      "album": {
+        "id": "6wAEkrOV1p38k0tAUxGFGH",
+        "name": "Infinito",
+        "release_date": "2012-11-01"
+      },
+      "url": "https://open.spotify.com/track/5eg601RYHLYUDQssIIfjDt"
+    },
+    {
+      "added_at": "2026-06-13T15:33:01Z",
+      "id": "4mnZ0uJXtGpPCy0rhWA4PP",
+      "name": "Sobreviver e Acreditar",
+      "uri": "spotify:track:4mnZ0uJXtGpPCy0rhWA4PP",
+      "duration_ms": 233778,
+      "popularity": 29,
+      "explicit": false,
+      "artists": [
+        {
+          "id": "2sFXe6NbmT3k7Qy4N8fE7f",
+          "name": "Fresno"
+        }
+      ],
+      "album": {
+        "id": "6wAEkrOV1p38k0tAUxGFGH",
+        "name": "Infinito",
+        "release_date": "2012-11-01"
+      },
+      "url": "https://open.spotify.com/track/4mnZ0uJXtGpPCy0rhWA4PP"
+    },
+    {
+      "added_at": "2026-06-13T15:34:22Z",
+      "id": "6jl8NySX6HaXGunnIeiI0R",
+      "name": "Natureza Caos",
+      "uri": "spotify:track:6jl8NySX6HaXGunnIeiI0R",
+      "duration_ms": 220020,
+      "popularity": 38,
+      "explicit": false,
+      "artists": [
+        {
+          "id": "2sFXe6NbmT3k7Qy4N8fE7f",
+          "name": "Fresno"
+        }
+      ],
+      "album": {
+        "id": "3GnxxTD6myp5iDR8DWLlqA",
+        "name": "sua alegria foi cancelada",
+        "release_date": "2019-07-05"
+      },
+      "url": "https://open.spotify.com/track/6jl8NySX6HaXGunnIeiI0R"
+    },
+    {
+      "added_at": "2026-06-13T15:34:28Z",
+      "id": "5HSqP55VsE9CnodtZrlXQ5",
+      "name": "Cada Acidente",
+      "uri": "spotify:track:5HSqP55VsE9CnodtZrlXQ5",
+      "duration_ms": 245916,
+      "popularity": 42,
+      "explicit": false,
+      "artists": [
+        {
+          "id": "2sFXe6NbmT3k7Qy4N8fE7f",
+          "name": "Fresno"
+        },
+        {
+          "id": "3Ujv6sa60JRiaxS8RVuNOj",
+          "name": "Tuyo"
+        }
+      ],
+      "album": {
+        "id": "3GnxxTD6myp5iDR8DWLlqA",
+        "name": "sua alegria foi cancelada",
+        "release_date": "2019-07-05"
+      },
+      "url": "https://open.spotify.com/track/5HSqP55VsE9CnodtZrlXQ5"
+    },
+    {
+      "added_at": "2026-06-13T15:36:02Z",
+      "id": "23UwYzeWY1rRK4iYKywacU",
+      "name": "Era Pra Sempre",
+      "uri": "spotify:track:23UwYzeWY1rRK4iYKywacU",
+      "duration_ms": 269629,
+      "popularity": 43,
+      "explicit": false,
+      "artists": [
+        {
+          "id": "2sFXe6NbmT3k7Qy4N8fE7f",
+          "name": "Fresno"
+        }
+      ],
+      "album": {
+        "id": "518eTaR0LiBmCtyjepuLaB",
+        "name": "Eu Nunca Fui Embora",
+        "release_date": "2024-11-01"
+      },
+      "url": "https://open.spotify.com/track/23UwYzeWY1rRK4iYKywacU"
+    },
+    {
+      "added_at": "2026-06-13T15:40:45Z",
+      "id": "39nffalh5staSsKfmmw1b8",
+      "name": "Diga Parte Final",
+      "uri": "spotify:track:39nffalh5staSsKfmmw1b8",
+      "duration_ms": 312468,
+      "popularity": 42,
+      "explicit": false,
+      "artists": [
+        {
+          "id": "2sFXe6NbmT3k7Qy4N8fE7f",
+          "name": "Fresno"
+        },
+        {
+          "id": "2oyiy3RLv9ifDElGUBHqL3",
+          "name": "CATTO"
+        }
+      ],
+      "album": {
+        "id": "518eTaR0LiBmCtyjepuLaB",
+        "name": "Eu Nunca Fui Embora",
+        "release_date": "2024-11-01"
+      },
+      "url": "https://open.spotify.com/track/39nffalh5staSsKfmmw1b8"
+    },
+    {
+      "added_at": "2026-06-13T15:40:55Z",
+      "id": "3uOTcfBzKJqlaKe5L6ZBzu",
+      "name": "Camadas",
+      "uri": "spotify:track:3uOTcfBzKJqlaKe5L6ZBzu",
+      "duration_ms": 228000,
+      "popularity": 30,
+      "explicit": false,
+      "artists": [
+        {
+          "id": "2sFXe6NbmT3k7Qy4N8fE7f",
+          "name": "Fresno"
+        },
+        {
+          "id": "7gfkYbxpguEc9bm6m8TpAr",
+          "name": "Chitãozinho & Xororó"
+        }
+      ],
+      "album": {
+        "id": "518eTaR0LiBmCtyjepuLaB",
+        "name": "Eu Nunca Fui Embora",
+        "release_date": "2024-11-01"
+      },
+      "url": "https://open.spotify.com/track/3uOTcfBzKJqlaKe5L6ZBzu"
+    },
+    {
+      "added_at": "2026-06-13T15:41:03Z",
+      "id": "6U91dUDUCllToKsXq2y8yb",
+      "name": "Eu Não Vou Deixar Você Morrer",
+      "uri": "spotify:track:6U91dUDUCllToKsXq2y8yb",
+      "duration_ms": 211080,
+      "popularity": 55,
+      "explicit": false,
+      "artists": [
+        {
+          "id": "2sFXe6NbmT3k7Qy4N8fE7f",
+          "name": "Fresno"
+        }
+      ],
+      "album": {
+        "id": "33vakWPP6Ze0sxf8A5kcss",
+        "name": "Carta de Adeus",
+        "release_date": "2026-04-24"
+      },
+      "url": "https://open.spotify.com/track/6U91dUDUCllToKsXq2y8yb"
+    },
+    {
+      "added_at": "2026-06-13T15:41:13Z",
+      "id": "5Vo7wzXoXyJzKhUnWWystj",
+      "name": "Carta de Adeus (BYE BYE TCHAU)",
+      "uri": "spotify:track:5Vo7wzXoXyJzKhUnWWystj",
+      "duration_ms": 212880,
+      "popularity": 55,
+      "explicit": false,
+      "artists": [
+        {
+          "id": "2sFXe6NbmT3k7Qy4N8fE7f",
+          "name": "Fresno"
+        }
+      ],
+      "album": {
+        "id": "33vakWPP6Ze0sxf8A5kcss",
+        "name": "Carta de Adeus",
+        "release_date": "2026-04-24"
+      },
+      "url": "https://open.spotify.com/track/5Vo7wzXoXyJzKhUnWWystj"
+    },
+    {
+      "added_at": "2026-06-13T15:43:46Z",
+      "id": "4x7OZJzLzYfPCir3PvND29",
+      "name": "Tentar De Novo e De Novo",
+      "uri": "spotify:track:4x7OZJzLzYfPCir3PvND29",
+      "duration_ms": 254832,
+      "popularity": 56,
+      "explicit": false,
+      "artists": [
+        {
+          "id": "2sFXe6NbmT3k7Qy4N8fE7f",
+          "name": "Fresno"
+        }
+      ],
+      "album": {
+        "id": "33vakWPP6Ze0sxf8A5kcss",
+        "name": "Carta de Adeus",
+        "release_date": "2026-04-24"
+      },
+      "url": "https://open.spotify.com/track/4x7OZJzLzYfPCir3PvND29"
+    },
+    {
+      "added_at": "2026-06-13T15:43:52Z",
+      "id": "4pjaCwLLLmin1rmJBwhA6R",
+      "name": "Pessoa",
+      "uri": "spotify:track:4pjaCwLLLmin1rmJBwhA6R",
+      "duration_ms": 221690,
+      "popularity": 53,
+      "explicit": false,
+      "artists": [
+        {
+          "id": "2sFXe6NbmT3k7Qy4N8fE7f",
+          "name": "Fresno"
+        }
+      ],
+      "album": {
+        "id": "33vakWPP6Ze0sxf8A5kcss",
+        "name": "Carta de Adeus",
+        "release_date": "2026-04-24"
+      },
+      "url": "https://open.spotify.com/track/4pjaCwLLLmin1rmJBwhA6R"
+    },
+    {
+      "added_at": "2026-06-13T16:00:04Z",
+      "id": "5B5eTk7DF8KVp1zpQoY1XY",
+      "name": "The Reason",
+      "uri": "spotify:track:5B5eTk7DF8KVp1zpQoY1XY",
+      "duration_ms": 232800,
+      "popularity": 87,
+      "explicit": false,
+      "artists": [
+        {
+          "id": "2MqhkhX4npxDZ62ObR5ELO",
+          "name": "Hoobastank"
+        }
+      ],
+      "album": {
+        "id": "3pCVjmRGVZ2mYuJN2R1wi8",
+        "name": "The Reason (20th Anniversary)",
+        "release_date": "2024-01-12"
+      },
+      "url": "https://open.spotify.com/track/5B5eTk7DF8KVp1zpQoY1XY"
+    },
+    {
+      "added_at": "2026-06-13T16:39:51Z",
+      "id": "6wJqQmyHqINC6aRm6iYsku",
+      "name": "Manifesto (feat. Lenine & Emicida)",
+      "uri": "spotify:track:6wJqQmyHqINC6aRm6iYsku",
+      "duration_ms": 274145,
+      "popularity": 43,
+      "explicit": false,
+      "artists": [
+        {
+          "id": "2sFXe6NbmT3k7Qy4N8fE7f",
+          "name": "Fresno"
+        },
+        {
+          "id": "4YLBdrR3DVSMncm785NH6C",
+          "name": "Lenine"
+        },
+        {
+          "id": "2d9LRvQJnAXRijqIJDDs2K",
+          "name": "Emicida"
+        }
+      ],
+      "album": {
+        "id": "2RhCVgGIB5dd4k8z8rsdYe",
+        "name": "Eu Sou a Maré Viva",
+        "release_date": "2014-03-31"
+      },
+      "url": "https://open.spotify.com/track/6wJqQmyHqINC6aRm6iYsku"
+    }
+  ]
+}

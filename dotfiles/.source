@@ -1,1 +1,2 @@
 # source "${HOME}/conda/etc/profile.d/conda.sh"
+source ${HOME}/danfault/dotfiles/.methods

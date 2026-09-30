@@ -1,0 +1,17 @@
+review-pr() {
+    gh pr diff "$1" | claude -p "You are a senior code reviewer. Review this diff for:
+  - Bugs and logic errors
+  - Security vulnerabilities
+  - Performance issues
+  - Code style and readability
+  - Check if there is anything to be added in the PR description
+  Be concise and actionable."
+  }
+
+find-folder() {
+  find "${2:-.}" -type d -iname "*$1*" 2>/dev/null
+}
+
+find-file() {
+  find "${2:-.}" -type f -iname "*$1*" 2>/dev/null
+}
