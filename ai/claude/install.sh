@@ -1,8 +1,20 @@
 #!/usr/bin/env bash
 # Applies the ai/claude config bundle to this machine's ~/.claude.
-# Safe to re-run. Never overwrites an existing file blindly — anything
-# already there gets backed up, then you're asked before it's replaced.
+# Safe to re-run. Never overwrites an existing file blindly — you're asked
+# first, and anything replaced gets backed up.
+#
+# Usage: install.sh [--yes]
+#   --yes, -y   Non-interactive: back up and replace every conflicting file
+#               without asking. Use this when a script runs the installer.
+#   Without --yes and without a terminal, conflicting files are skipped.
 set -e
+
+ASSUME_YES=0
+case "${1:-}" in
+  -y|--yes) ASSUME_YES=1 ;;
+  "") ;;
+  *) echo "Usage: $0 [--yes]" >&2; exit 2 ;;
+esac
 
 INSTALL_FILE=$(readlink -f "$0")
 CLAUDE_DIR=$(dirname "$INSTALL_FILE")
@@ -13,7 +25,7 @@ mkdir -p "$TARGET/output-styles" "$TARGET/skills/commit"
 # Symlink $1 (repo file) to $2 (target in ~/.claude), so edits in the repo
 # take effect immediately. If something is already at the target:
 #   - if it's already the right symlink, leave it alone (idempotent reruns)
-#   - otherwise back it up, then ask before overwriting
+#   - otherwise ask (or, with --yes, don't), then back it up and overwrite
 link_with_confirm() {
   local src="$1" dst="$2"
 
@@ -23,15 +35,26 @@ link_with_confirm() {
   fi
 
   if [ -e "$dst" ] || [ -L "$dst" ]; then
-    local backup="${dst}.bak-$(date +%Y%m%d%H%M%S)"
-    cp -a "$dst" "$backup"
-    echo "Backed up $dst to $backup"
+    if [ "$ASSUME_YES" -ne 1 ]; then
+      if [ ! -t 0 ]; then
+        echo "Skipped $dst (already exists; no terminal to ask — re-run with --yes to back up and replace)"
+        return
+      fi
+      read -r -p "Overwrite $dst with a link to $src? (a backup is kept) [y/N] " reply
+      case "$reply" in
+        [yY]|[yY][eE][sS]) ;;
+        *) echo "Skipped $dst"; return ;;
+      esac
+    fi
 
-    read -r -p "Overwrite $dst with a link to $src? [y/N] " reply
-    case "$reply" in
-      [yY]|[yY][eE][sS]) ;;
-      *) echo "Skipped $dst"; return ;;
-    esac
+    local backup="${dst}.bak-$(date +%Y%m%d%H%M%S)"
+    if [ -e "$dst" ]; then
+      # -L: if $dst is a link, save the file it points to, not the link.
+      cp -aL "$dst" "$backup"
+      echo "Backed up $dst to $backup"
+    else
+      echo "Replacing broken link $dst (pointed to $(readlink "$dst")) — nothing to back up"
+    fi
   fi
 
   ln -sf "$src" "$dst"
@@ -47,12 +70,15 @@ chmod +x "$CLAUDE_DIR/statusline-command.sh"
 # settings.json holds machine-specific permissions/plugins/hooks too, so it
 # is never symlinked wholesale. Merge in just the keys from this repo's
 # settings.json, backing up whatever was there first. "hooks" is merged one
-# level deeper (per event type, deduping identical entries) so this doesn't
-# clobber unrelated hooks already configured on the machine.
+# level deeper (per event type) so this doesn't clobber unrelated hooks
+# already configured on the machine. Each repo-owned hook command carries a
+# "# danfault:<id>" marker; any installed hook with the same id is removed
+# before the current version is added, so edited hooks replace their old
+# version instead of piling up next to it.
 SETTINGS="$TARGET/settings.json"
 if command -v python3 >/dev/null 2>&1; then
   python3 - "$CLAUDE_DIR/settings.json" "$SETTINGS" <<'PY'
-import json, sys, pathlib, datetime
+import json, re, sys, pathlib, datetime
 
 src_path, dst_path = sys.argv[1], sys.argv[2]
 src = json.loads(pathlib.Path(src_path).read_text())
@@ -68,10 +94,20 @@ if dst_file.exists():
 for key, value in src.items():
     if key == "hooks" and isinstance(value, dict) and isinstance(dst.get(key), dict):
         for event, hook_list in value.items():
-            existing = dst[key].setdefault(event, [])
+            ids = set(re.findall(r"# danfault:([\w-]+)", json.dumps(hook_list)))
+            # "danfault <id>" also matches hooks installed before the marker existed.
+            owned = re.compile(r"danfault[: ](%s)\b" % "|".join(map(re.escape, ids))) if ids else None
+            existing = []
+            for group in dst[key].get(event, []):
+                if owned:
+                    group = {**group, "hooks": [h for h in group.get("hooks", []) if not owned.search(h.get("command", ""))]}
+                    if not group["hooks"]:
+                        continue
+                existing.append(group)
             for entry in hook_list:
                 if entry not in existing:
                     existing.append(entry)
+            dst[key][event] = existing
     else:
         dst[key] = value
 

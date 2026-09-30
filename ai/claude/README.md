@@ -20,7 +20,17 @@ Personal Claude Code setup, applied to `~/.claude` on any machine this repo is c
 
 It links `CLAUDE.md`, `output-styles/plain.md`, `statusline-command.sh`, and `skills/commit/SKILL.md` straight into `~/.claude/` (edits in the repo take effect immediately), and merges only the `outputStyle`/`statusLine`/`hooks` keys into `~/.claude/settings.json` — anything else already in that file (machine permissions, installed plugins, other hooks) is backed up and left alone; the `hooks.PreToolUse` list is merged entry-by-entry rather than replaced outright. It also registers the local plugin marketplace below.
 
-Re-running it is safe.
+Re-running it is safe. When a target file already exists (and isn't already the right link), it asks before replacing it and keeps a `<file>.bak-<timestamp>` backup of anything it replaces. Answering no leaves the file untouched, with no backup.
+
+### Non-interactive install
+
+From a script (provisioning, dotfiles bootstrap, CI), pass `--yes`:
+
+```bash
+./ai/claude/install.sh --yes
+```
+
+Every conflicting file is backed up to `<file>.bak-<timestamp>` and then replaced — nothing is asked and nothing is lost. Without `--yes` and without a terminal, conflicting files are skipped (with a message) instead of failing the run.
 
 ## Commit safeguard
 
