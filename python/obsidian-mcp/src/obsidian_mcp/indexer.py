@@ -9,6 +9,7 @@ import json
 import os
 import re
 import sqlite3
+import sys
 from pathlib import Path
 
 import frontmatter
@@ -107,7 +108,14 @@ def index_vault(vault_path: Path, db_path: Path, full: bool = False) -> None:
                 continue
 
         text = md_file.read_text(encoding="utf-8", errors="replace")
-        post = frontmatter.loads(text)
+        # One malformed file must not abort the whole run: files are indexed in sorted order, so
+        # an unparseable note would otherwise silently leave everything after it unindexed.
+        try:
+            post = frontmatter.loads(text)
+        except Exception as exc:
+            print(f"Warning: skipping {rel} — malformed frontmatter: {exc}", file=sys.stderr)
+            skipped += 1
+            continue
         fm = post.metadata
 
         conn.execute("DELETE FROM chunks WHERE file_path = ?", (str(rel),))
