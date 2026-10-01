@@ -15,6 +15,17 @@
           }
         ]
       }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "# danfault:vault-reindex\n# Reindex the vault holding the edited note, in the background; no-op outside every vault.\nf=$(jq -r '.tool_input.file_path // empty')\n[ -n \"$f\" ] && nohup uv run -q --project \"$HOME/danfault/python/obsidian-mcp\" obsidian-index --for-file \"$f\" >/dev/null 2>&1 &\nexit 0\n"
+          }
+        ]
+      }
     ]
   }
 }
