@@ -47,6 +47,7 @@ Every tool except `obsidian_list_vaults` takes an optional `vault` name; without
 
 ```bash
 obsidian-index [--vault NAME] [--full]                 # incremental by default
+obsidian-index --for-file PATH                         # reindex the vault holding PATH; no-op outside every vault
 obsidian-capture "text" [--vault NAME] [--title T] [--domain D] [--tags a b]
 ```
 

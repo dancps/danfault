@@ -70,3 +70,12 @@ def resolve(name: str | None = None) -> Vault:
     if name not in vaults:
         raise ValueError(f"Unknown vault '{name}'. Known: {', '.join(vaults) or '(none)'}")
     return _vault(name, vaults[name] or {}, default)
+
+
+def vault_for_file(file_path: str) -> Vault | None:
+    """Return the registered vault that contains ``file_path``, or None if no vault does."""
+    target = Path(os.path.expanduser(file_path)).resolve()
+    for v in list_vaults():
+        if target.is_relative_to(v.path.resolve()):
+            return v
+    return None

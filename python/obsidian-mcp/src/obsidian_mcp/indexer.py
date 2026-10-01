@@ -3,6 +3,7 @@ Index an Obsidian vault into SQLite with BM25 tokens and embeddings.
 
 Usage:
     obsidian-index [--vault NAME] [--full]
+    obsidian-index --for-file PATH    # reindex the vault holding PATH; no-op outside every vault
 """
 import argparse
 import json
@@ -166,11 +167,24 @@ def index_vault(vault_path: Path, db_path: Path, full: bool = False) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Index Obsidian vault into SQLite")
     parser.add_argument("--full", action="store_true", help="Full reindex (ignore mtimes)")
-    parser.add_argument("--vault", help="Vault name from ~/.config/danfault/vault.yaml (default: default_vault)")
+    target = parser.add_mutually_exclusive_group()
+    target.add_argument("--vault", help="Vault name from ~/.config/danfault/vault.yaml (default: default_vault)")
+    target.add_argument(
+        "--for-file",
+        metavar="PATH",
+        help="Reindex the vault that contains PATH (used by the edit hook); exit 0 if PATH is not a note in a vault",
+    )
     args = parser.parse_args()
 
     try:
-        v = config.resolve(args.vault)
+        if args.for_file:
+            if not args.for_file.endswith(".md"):
+                return
+            v = config.vault_for_file(args.for_file)
+            if v is None:
+                return
+        else:
+            v = config.resolve(args.vault)
     except ValueError as e:
         parser.error(str(e))
 

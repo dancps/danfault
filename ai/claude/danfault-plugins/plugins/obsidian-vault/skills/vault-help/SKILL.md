@@ -66,7 +66,7 @@ One `obsidian` MCP server serves every vault in `~/.config/danfault/vault.yaml`.
 
 | Trigger | What happens |
 |---|---|
-| Claude writes/edits a file in `<vault>/` | Vault is automatically reindexed in the background |
+| Claude writes/edits a `.md` note in any registered vault | That vault is reindexed in the background (`danfault:vault-reindex` hook, installed by `ai/claude/install.sh`) |
 
 ### Vault Structure
 
