@@ -2,7 +2,7 @@
 # <bitbar.title>GitHub PR Tracker</bitbar.title>
 # <bitbar.version>1.0</bitbar.version>
 # <bitbar.author>Danilo Calhes</bitbar.author>
-# <bitbar.author.github>dcalhes</bitbar.author.github>
+# <bitbar.author.github>dancps</bitbar.author.github>
 # <bitbar.desc>Shows your open GitHub pull requests, using the authenticated `gh` CLI session.</bitbar.desc>
 
 export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
