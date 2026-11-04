@@ -1,0 +1,10 @@
+mouse-scroll-multiplier = 0.8
+
+# Put the tabs inside the title bar (like macOS) instead of on a second bar
+gtk-titlebar-style = tabs
+
+# Make the lines closer together
+adjust-cell-height = -10%
+
+# Smaller, pill-shaped tabs
+gtk-custom-css = ~/.config/ghostty/custom.css

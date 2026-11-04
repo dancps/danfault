@@ -1,0 +1,85 @@
+tabbar .box {
+  min-height: 0;
+  padding: 0;
+}
+
+tabbar tab {
+  min-height: 24px;
+  padding: 0 8px;
+  margin: 3px 2px;
+  border: 1px solid alpha(white, 0.15);
+  border-radius: 999px;
+}
+
+tabbar tab:selected,
+tabbar tab:checked {
+  border-color: alpha(white, 0.4);
+}
+
+tabbar tab label {
+  font-size: 0.9em;
+}
+
+tabbar tab button.tab-close-button {
+  min-width: 16px;
+  min-height: 16px;
+  padding: 0;
+  margin: 0;
+}
+
+/* Hide the dividers between tabs, which look wrong next to pill borders */
+tabbar tabbox > separator {
+  opacity: 0;
+}
+
+/* WhiteSur paints a grey square on these buttons, behind libadwaita's circle */
+tabbar windowcontrols > button,
+tabbar windowcontrols > button:hover,
+tabbar windowcontrols > button:active,
+tabbar windowcontrols > button:backdrop {
+  background: none;
+  border: none;
+  box-shadow: none;
+}
+
+/* Small red, yellow and green window buttons, like macOS */
+tabbar windowcontrols > button {
+  min-width: 0;
+  min-height: 0;
+  padding: 0 4px;
+}
+
+tabbar windowcontrols > button > image {
+  min-width: 12px;
+  min-height: 12px;
+  padding: 0;
+  border-radius: 100%;
+  color: transparent;
+  -gtk-icon-size: 12px;
+}
+
+tabbar windowcontrols > button.close > image,
+tabbar windowcontrols > button.close:hover > image,
+tabbar windowcontrols > button.close:active > image {
+  background-color: #ff5f57;
+}
+
+tabbar windowcontrols > button.minimize > image,
+tabbar windowcontrols > button.minimize:hover > image,
+tabbar windowcontrols > button.minimize:active > image {
+  background-color: #febc2e;
+}
+
+tabbar windowcontrols > button.maximize > image,
+tabbar windowcontrols > button.maximize:hover > image,
+tabbar windowcontrols > button.maximize:active > image {
+  background-color: #28c840;
+}
+
+tabbar windowcontrols > button:hover > image {
+  filter: brightness(1.15);
+}
+
+tabbar windowcontrols > button:active > image {
+  filter: brightness(0.85);
+}

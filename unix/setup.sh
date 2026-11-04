@@ -9,6 +9,14 @@ source $DANFAULT_DIR/dotfiles/.export
 source $DANFAULT_DIR/dotfiles/.extra
 source $DANFAULT_DIR/dotfiles/.source
 
+WHITESUR_THEME=false
+for arg in "$@"; do
+    case $arg in
+        --white-sur-theme) WHITESUR_THEME=true ;;
+        *) echo "Unknown option: $arg"; echo "Usage: $0 [--white-sur-theme]"; exit 1 ;;
+    esac
+done
+
 sudo apt update
 sudo apt upgrade -y
 
@@ -130,6 +138,50 @@ then
 else
     echo -e "${Cyan}[danfault - git]${Color_Off} .gitconfig file does not exists."
     cp $DANFAULT_DIR/git/.gitconfig ~/.gitconfig
+fi
+
+
+###############################################################################
+### Ghostty                                                                 ###
+###############################################################################
+# Will link:
+#   - config.ghostty
+#   - custom.css
+
+echo -e "${Cyan}[danfault - Ghostty]${Color_Off} Linking Ghostty config"
+mkdir -p ~/.config/ghostty
+ln -sf $DANFAULT_DIR/terminal-configs/ghostty/config.ghostty ~/.config/ghostty/config.ghostty
+ln -sf $DANFAULT_DIR/terminal-configs/ghostty/custom.css ~/.config/ghostty/custom.css
+
+
+###############################################################################
+### WhiteSur theme (optional: --white-sur-theme)                            ###
+###############################################################################
+# macOS-like GTK, libadwaita and GNOME Shell theme. See tips/ubuntu_whitesur_ghostty.md.
+
+if [ "$WHITESUR_THEME" = true ]; then
+    WHITESUR_DIR=~/Documents/projects/repos/WhiteSur-gtk-theme
+
+    echo -e "${Cyan}[danfault - WhiteSur]${Color_Off} Installing dependencies"
+    sudo apt install -y sassc libglib2.0-dev-bin gnome-shell-extensions
+
+    if [ -d "$WHITESUR_DIR" ]; then
+        echo -e "${Cyan}[danfault - WhiteSur]${Color_Off} Updating $WHITESUR_DIR"
+        git -C $WHITESUR_DIR pull
+    else
+        echo -e "${Cyan}[danfault - WhiteSur]${Color_Off} Cloning into $WHITESUR_DIR"
+        mkdir -p $(dirname $WHITESUR_DIR)
+        git clone --depth=1 https://github.com/vinceliuice/WhiteSur-gtk-theme.git $WHITESUR_DIR
+    fi
+
+    # Must not run with sudo: -l writes into ~/.config/gtk-4.0
+    echo -e "${Cyan}[danfault - WhiteSur]${Color_Off} Installing theme (libadwaita, 75% top bar opacity)"
+    $WHITESUR_DIR/install.sh -l --shell -p 75
+
+    echo -e "${Cyan}[danfault - WhiteSur]${Color_Off} Applying theme"
+    gsettings set org.gnome.desktop.interface gtk-theme 'WhiteSur-Dark'
+    gnome-extensions enable user-theme@gnome-shell-extensions.gcampax.github.com
+    gsettings set org.gnome.shell.extensions.user-theme name 'WhiteSur-Dark'
 fi
 
 

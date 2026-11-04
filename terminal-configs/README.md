@@ -36,3 +36,7 @@ git add . && git commit -m "backup terminal configs"
 To export only the palette (not full prefs):
 `Settings → Profiles → Colors → Color Presets → Export…` → produces a
 `.itermcolors` file you can drop in here too.
+
+## Ghostty
+
+`ghostty/config.ghostty` and `ghostty/custom.css` are linked into `~/.config/ghostty/` by `unix/setup.sh`. See [tips/ubuntu_whitesur_ghostty.md](../tips/ubuntu_whitesur_ghostty.md).
