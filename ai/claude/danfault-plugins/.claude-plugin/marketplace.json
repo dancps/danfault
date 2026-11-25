@@ -18,7 +18,7 @@
       "description": "Skills to work with an Obsidian vault: capture notes, write daily logs and session reports, scaffold projects, track projects and tasks, and reindex the obsidian-mcp search index. Resolves vault paths with `danfault vault`.",
       "source": "./plugins/obsidian-vault",
       "category": "productivity",
-      "version": "0.3.1"
+      "version": "0.4.0"
     }
   ]
 }

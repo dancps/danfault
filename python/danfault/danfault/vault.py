@@ -28,6 +28,7 @@ CLI::
     danfault vault tasks [--project P] [--status S]  # notes in 01-projects/*/tasks/
     danfault vault project init P [--title T] [--domain D] [--goal G] [--status S]  # create or enhance P
     danfault vault project set-status P S     # write status into P/project.json
+    danfault vault task set-status P T S      # write task T's status into P/project.json
     danfault vault health-check [--project P] # report metadata divergences
 """
 
@@ -201,7 +202,7 @@ Each project lives in `01-projects/<project>/`. The `danfault vault` CLI reads t
 | Path | Purpose |
 |------|---------|
 | `SUMMARY.md` | Project overview. The CLI reads `title` and `status` from its frontmatter. |
-| `project.json` | Optional metadata written by the CLI (for example `status`). It wins over `SUMMARY.md`. |
+| `project.json` | Optional metadata written by the CLI: the project's `status` and a `tasks` map of task statuses. It wins over the notes. |
 | `tasks/<task>.md` | One note per task, with `title`, `status` and `created` in the frontmatter. |
 
 ```bash
@@ -209,10 +210,11 @@ danfault vault list projects [--status S]        # projects, status and task cou
 danfault vault tasks [--project P] [--status S]  # task notes
 danfault vault project init P [--title T] ...    # create a project, or add what it is missing
 danfault vault project set-status P S            # write status to P/project.json
+danfault vault task set-status P T S             # write task T's status to P/project.json
 danfault vault health-check [--project P]        # divergences, missing statuses, projects without project.json
 ```
 
-`set-status` does not edit `SUMMARY.md`. Update the note by hand, and use `health-check` to find what is out of sync.
+`set-status` does not edit `SUMMARY.md` or task notes. Update the note by hand, and use `health-check` to find what is out of sync.
 
 ## Indexing
 
@@ -403,6 +405,8 @@ list_app = typer.Typer(help="List things inferred from the vault's folder struct
 app.add_typer(list_app, name="list")
 project_app = typer.Typer(help="Create projects and change their metadata (in project.json).")
 app.add_typer(project_app, name="project")
+task_app = typer.Typer(help="Change a task's metadata (in its project's project.json).")
+app.add_typer(task_app, name="task")
 
 
 def _vault_root(vault: Optional[str]) -> Path:
@@ -445,6 +449,7 @@ class _ProjectInfo:
     title: str = ""
     md_status: Optional[str] = None
     json_status: Optional[str] = None
+    json_tasks: dict = field(default_factory=dict)
     errors: List[str] = field(default_factory=list)
 
     @property
@@ -480,10 +485,30 @@ def _read_project(path: Path) -> _ProjectInfo:
         except ValueError as e:
             info.errors.append(f"SUMMARY.md: {e}")
     try:
-        info.json_status = _read_project_json(path / PROJECT_JSON).get("status")
+        data = _read_project_json(path / PROJECT_JSON)
+        info.json_status = data.get("status")
+        tasks_ = data.get("tasks", {})
+        if isinstance(tasks_, dict):
+            info.json_tasks = tasks_
+        else:
+            info.errors.append(f'{PROJECT_JSON}: "tasks" is not an object')
     except ValueError as e:
         info.errors.append(str(e))
     return info
+
+
+def _task_status(info: _ProjectInfo, task: Path) -> str:
+    return info.json_tasks.get(task.stem) or _frontmatter(task).get("status") or "unknown"
+
+
+def _task_divergences(info: _ProjectInfo) -> List[tuple]:
+    """(task id, project.json status, frontmatter status) for each task whose two statuses differ."""
+    out = []
+    for task in _tasks(info.path):
+        json_status, md_status = info.json_tasks.get(task.stem), _frontmatter(task).get("status")
+        if json_status and md_status and json_status != md_status:
+            out.append((task.stem, json_status, md_status))
+    return out
 
 
 def _projects(root: Path) -> List[Path]:
@@ -516,9 +541,10 @@ def _warn(message: str) -> None:
 
 def _warn_if_diverged(infos: List[_ProjectInfo]) -> None:
     names = [i.path.name for i in infos if i.diverged]
+    names += [f"{i.path.name}/{t}" for i in infos for t, _, _ in _task_divergences(i)]
     if names:
         _warn(
-            f"{PROJECT_JSON} and SUMMARY.md disagree on status for: {', '.join(names)}. "
+            f"{PROJECT_JSON} and the notes disagree on status for: {', '.join(names)}. "
             "See `danfault vault health-check`."
         )
 
@@ -545,18 +571,20 @@ def tasks(
     vault: Optional[str] = typer.Option(None, "--vault", help="Vault name (default: default_vault)"),
     status: Optional[str] = typer.Option(None, "--status", help="Only tasks with this status"),
 ):
-    """List task notes from 01-projects/<project>/tasks/."""
+    """List task notes from 01-projects/<project>/tasks/. A status in project.json wins over the note's."""
     root = _vault_root(vault)
     projects = [_project(root, project)] if project else _projects(root)
+    infos = [_read_project(p) for p in projects]
     rows = []
-    for p in projects:
-        for task in _tasks(p):
+    for info in infos:
+        for task in _tasks(info.path):
             meta = _frontmatter(task)
-            if status and (meta.get("status") or "unknown") != status:
+            task_status = _task_status(info, task)
+            if status and task_status != status:
                 continue
-            rows.append([p.name, task.stem, meta.get("title", ""), meta.get("status") or "unknown", meta.get("created", "")])
+            rows.append([info.path.name, task.stem, meta.get("title", ""), task_status, meta.get("created", "")])
     _print_table(["PROJECT", "TASK", "TITLE", "STATUS", "CREATED"], rows)
-    _warn_if_diverged([_read_project(p) for p in projects])
+    _warn_if_diverged(infos)
 
 
 @project_app.command("init")
@@ -641,6 +669,37 @@ def project_set_status(
         )
 
 
+@task_app.command("set-status")
+def task_set_status(
+    project: str = typer.Argument(..., help="Project folder name"),
+    task: str = typer.Argument(..., help="Task id (file name in tasks/, without .md)"),
+    status: str = typer.Argument(..., help="New status, e.g. open, done, blocked"),
+    vault: Optional[str] = typer.Option(None, "--vault", help="Vault name (default: default_vault)"),
+):
+    """Set a task's status in its project's project.json (created if missing). The task note is not touched."""
+    path = _project(_vault_root(vault), project)
+    note = path / "tasks" / f"{task}.md"
+    if not note.exists():
+        typer.secho(f"Unknown task '{task}'. See `danfault vault tasks --project {project}`.", fg="red", err=True)
+        raise typer.Exit(1)
+    info = _read_project(path)
+    if info.errors:
+        for e in info.errors:
+            typer.secho(f"{project}: {e}. Fix it before setting the status.", fg="red", err=True)
+        raise typer.Exit(1)
+    data = _read_project_json(path / PROJECT_JSON)
+    old = _task_status(info, note)
+    data.setdefault("tasks", {})[task] = status
+    (path / PROJECT_JSON).write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    typer.echo(f"{project}/{task}: {old} -> {status}")
+    md_status = _frontmatter(note).get("status")
+    if md_status and md_status != status:
+        _warn(
+            f"{project}/tasks/{task}.md still says status: {md_status}. Update it to match. "
+            f"See `danfault vault health-check --project {project}`."
+        )
+
+
 @app.command("health-check")
 def health_check(
     project: Optional[str] = typer.Option(None, "--project", "-p", help="Only check this project (folder name)"),
@@ -662,12 +721,18 @@ def health_check(
             issues.append((p.name, f"status differs: {PROJECT_JSON}={info.json_status}, SUMMARY.md={info.md_status}"))
         elif info.status == "unknown" and not info.errors:
             issues.append((p.name, f"no status in {PROJECT_JSON} or SUMMARY.md"))
-        for task in _tasks(p):
+        task_files = _tasks(p)
+        for task in task_files:
             try:
-                if not _parse_frontmatter(task).get("status"):
+                if not (info.json_tasks.get(task.stem) or _parse_frontmatter(task).get("status")):
                     issues.append((p.name, f"tasks/{task.name}: no status"))
             except ValueError as e:
                 issues.append((p.name, f"tasks/{task.name}: {e}"))
+        for t, json_status, md_status in _task_divergences(info):
+            issues.append((p.name, f"tasks/{t}.md: status differs: {PROJECT_JSON}={json_status}, note={md_status}"))
+        existing = {t.stem for t in task_files}
+        for t in sorted(set(info.json_tasks) - existing):
+            issues.append((p.name, f'{PROJECT_JSON} has task "{t}" but tasks/{t}.md does not exist'))
     if issues:
         _print_table(["PROJECT", "ISSUE"], [list(i) for i in issues])
     else:

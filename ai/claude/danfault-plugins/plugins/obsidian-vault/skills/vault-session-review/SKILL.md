@@ -1,6 +1,6 @@
 ---
 name: vault-session-review
-description: Review the current session and suggest what's worth capturing to the Obsidian vault. Covers learnings, decisions, debugging patterns, platform insights, operational output, and project status updates.
+description: Review the current session and suggest what's worth capturing to the Obsidian vault. Covers learnings, decisions, debugging patterns, platform insights, operational output, project status updates, and tasks.
 user-invocable: true
 ---
 
@@ -15,7 +15,9 @@ Use at the end of a session to identify content worth preserving in the vault.
 
 ## Instructions
 
-1. **Review the session** across three dimensions:
+0. **Load the project's tasks** — if the session touches a project in `01-projects/`, run `danfault vault tasks --project <project>` so the review can compare the session with what was planned.
+
+1. **Review the session** across four dimensions:
 
    **A — Durable knowledge** (goes to `learnings/`, `03-resources/`, or `00-inbox/` via `/obsidian-vault:capture`):
    - Learnings: how something works, a platform behavior, a framework detail
@@ -37,12 +39,17 @@ Use at the end of a session to identify content worth preserving in the vault.
    - What comes next (concrete next steps for the next session)
    - Active clusters, branches, PR numbers
 
+   **D — Tasks** (through the `danfault vault` CLI; see `/obsidian-vault:vault-tasks`):
+   - New tasks: concrete next steps that came up in the session and are not in the task list yet
+   - Task status changes: tasks finished, blocked or started in this session
+   - Project status change: for example the session finished the project
+
 2. **Filter ruthlessly for durable knowledge** — skip:
    - Anything too session-specific to generalize
    - Content already well-documented in the codebase or vault
    - Ephemeral output that belongs in a report, not a learning
 
-3. **Present three sections** — only show a section if there's content for it:
+3. **Present four sections** — only show a section if there's content for it:
 
    ```
    Worth capturing (durable):
@@ -58,10 +65,15 @@ Use at the end of a session to identify content worth preserving in the vault.
    Project status update (01-projects/my-project/status.md):
    - Feature A: ✅ DONE (PR #12345)
    - Feature B: ⏳ divergence unresolved
-   - Next: investigate the discrepancy in the upstream source
+   - Next: see tasks
+
+   Tasks (my-project):
+   - New: "check-upstream-discrepancy" — investigate the discrepancy in the upstream source
+   - Status: fix-null-handling open → done
+   - Project: active → finished
    ```
 
-   If the session touches a project tracked in `01-projects/`, **always** include the status section — even if no durable knowledge or operational output was produced.
+   If the session touches a project tracked in `01-projects/`, **always** include the status and tasks sections — even if no durable knowledge or operational output was produced.
 
 4. **Handle each section:**
 
@@ -75,3 +87,12 @@ Use at the end of a session to identify content worth preserving in the vault.
    For **operational output** — ask "Want to write a session report?" and if yes, invoke `/obsidian-vault:vault-report` with the project name pre-filled.
 
    For **project status** — ask "Want to update status.md?" and if yes, **overwrite** (do not append) `01-projects/<project>/status.md` with the new state. The file must always reflect current reality, not accumulated history. Keep the same structure as the existing file: per-op validation table, detail sections for blocked items, recent commits, next session steps, and persistent operational notes (clusters, permissions). Update the `Last updated:` line to today's date.
+
+   For **tasks** — ask about each item:
+   - New task: create the note as in `/obsidian-vault:vault-tasks` ("Adding a task").
+   - Task status: `danfault vault task set-status <project> <task> <status>`.
+   - Project status: `danfault vault project set-status <project> <status>`.
+
+   Do not edit task notes or `SUMMARY.md` to change a status. Report the CLI's warnings. Concrete next steps go into tasks; `status.md` should point to them instead of repeating them.
+
+5. **Check metadata** — run `danfault vault health-check --project <project>` and show its output. If the project is not enhanced yet (no `project.json`), suggest `danfault vault project init <project>`.

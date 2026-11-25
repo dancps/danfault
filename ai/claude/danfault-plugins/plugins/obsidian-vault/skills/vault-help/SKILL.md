@@ -44,6 +44,7 @@ Read from `01-projects/<project>/` (`SUMMARY.md`, optional `project.json`, `task
 | `danfault vault tasks [--project P] [--status S]` | Task notes from `tasks/` |
 | `danfault vault project init P [--title T] [--domain D] [--goal G] [--status S]` | Creates a project, or adds what an existing one is missing; never overwrites |
 | `danfault vault project set-status P S` | Writes the status to `P/project.json`; `SUMMARY.md` is not touched |
+| `danfault vault task set-status P T S` | Writes task `T`'s status to `P/project.json`; the task note is not touched |
 | `danfault vault health-check [--project P]` | Status divergences, missing statuses, malformed metadata; lists projects without `project.json` |
 
 Skills use these instead of hardcoding paths, so the same skill works on any
@@ -108,7 +109,7 @@ vault/
 | File/Folder | Purpose | Indexed? |
 |---|---|---|
 | `SUMMARY.md` | Stable overview, goal, key links | ✅ |
-| `project.json` | CLI metadata (`status`); wins over `SUMMARY.md` | ❌ |
+| `project.json` | CLI metadata (`status`, `tasks` statuses); wins over the notes | ❌ |
 | `tasks/` | One note per task | ✅ |
 | `status.md` | Live status — overwrite each session | ✅ |
 | `learnings/` | Durable platform knowledge | ✅ |
