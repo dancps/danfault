@@ -9,7 +9,9 @@ danfault vault list projects [--status S]
 danfault vault tasks [--project P] [--status S]
 danfault vault project init P [--title T] [--domain D] [--goal G] [--status S]
 danfault vault project set-status P S
+danfault vault project link P [--repo owner/repo]
 danfault vault task set-status P T S
+danfault vault which
 danfault vault health-check [--project P]
 ```
 
@@ -21,6 +23,19 @@ danfault vault health-check [--project P]
 - Status is free text. There is no fixed vocabulary.
 - Task statuses follow the same rule: `task set-status` writes `"tasks": {"<task id>": "<status>"}` in the project's `project.json`, which wins over the task's frontmatter.
 - When `project.json` and a note disagree, the commands print a warning to stderr. `set-status` reminds you to update the note. `health-check` lists every divergence (and `tasks` entries without a note) and exits 1.
+
+## Decision: pick the vault from the current repo, through project.json
+
+A code repo is linked to a project in the vault, not the other way round: `project link` adds the repo's `owner/repo` (from `git remote get-url origin`) to `repos` in the project's `project.json`. Nothing is written to the code repo, so this works in repos shared with other people, and the link travels with the vault's git repo to every machine.
+
+Without `--vault`, every command (and the `obsidian` MCP, `obsidian-index`, `obsidian-capture`) picks the vault in this order:
+
+1. `$DANFAULT_VAULT`
+2. the vault with a project whose `repos` lists the current repo's origin
+3. the vault that contains the current directory
+4. `default_vault`
+
+In a linked repo (or inside `01-projects/<project>/`), `tasks` shows only that project; `--all` shows every project. When several projects list the same repo, the first one is used with a warning. `which` shows the result and the reason.
 
 ## Syncing
 
@@ -34,6 +49,6 @@ A project with a `project.json` is "enhanced". `health-check` lists projects tha
 
 ## Next ideas
 
-- Keep per-project repos and sources in `project.json` (or in separate `repos.json` / `sources.json`; not decided).
+- Keep per-project sources in `project.json`.
 - When `project.json` has more fields, show the fields each project is missing in `health-check`.
 - `/vault-session-review` uses these commands to propose new tasks, task and project status changes, and runs `health-check`.

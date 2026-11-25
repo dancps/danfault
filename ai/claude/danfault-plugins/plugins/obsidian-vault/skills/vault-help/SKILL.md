@@ -28,7 +28,8 @@ Locations and domains are read from a machine-local config (never committed):
 
 | Command | Returns |
 |---|---|
-| `danfault vault path [--vault NAME]` | Absolute path to a vault (default: `default_vault`) |
+| `danfault vault path [--vault NAME]` | Absolute path to a vault (default: see `which`) |
+| `danfault vault which` | Which vault and project are used in the current directory, and why |
 | `danfault vault domains [--vault NAME]` | The vault's declared note domains, one per line |
 | `danfault vault repos [--github]` | Every configured repo's path (or `owner/repo` slug) |
 | `danfault vault repo NAME [--github]` | One repo's path (or its `owner/repo` slug) |
@@ -36,14 +37,15 @@ Locations and domains are read from a machine-local config (never committed):
 
 ### Projects and Tasks
 
-Read from `01-projects/<project>/` (`SUMMARY.md`, optional `project.json`, `tasks/<task>.md`). Every command takes `--vault NAME`.
+Read from `01-projects/<project>/` (`SUMMARY.md`, optional `project.json`, `tasks/<task>.md`). Every command takes `--vault NAME`. Without it, the vault is `$DANFAULT_VAULT`, else the project linked to the current repo, else the vault that contains the current directory, else `default_vault`.
 
 | Command | Returns |
 |---|---|
 | `danfault vault list projects [--status S]` | Projects with title, status and task count |
-| `danfault vault tasks [--project P] [--status S]` | Task notes from `tasks/` |
+| `danfault vault tasks [--project P] [--status S] [--all]` | Task notes from `tasks/`. In a linked repo or a project folder, only that project's (`--all` for every project) |
 | `danfault vault project init P [--title T] [--domain D] [--goal G] [--status S]` | Creates a project, or adds what an existing one is missing; never overwrites |
 | `danfault vault project set-status P S` | Writes the status to `P/project.json`; `SUMMARY.md` is not touched |
+| `danfault vault project link P [--repo owner/repo]` | Links a code repo to `P` (`repos` in `P/project.json`; default: the current repo's origin). Nothing is written to the repo |
 | `danfault vault task set-status P T S` | Writes task `T`'s status to `P/project.json`; the task note is not touched |
 | `danfault vault health-check [--project P]` | Status divergences, missing statuses, malformed metadata; lists projects without `project.json` |
 
@@ -67,7 +69,7 @@ machine and across separate work/personal vaults.
 
 ### MCP Tools (available in any Claude session)
 
-One `obsidian` MCP server serves every vault in `~/.config/danfault/vault.yaml`. Each tool below (except `obsidian_list_vaults`) takes an optional `vault` name; without it, `default_vault` is used.
+One `obsidian` MCP server serves every vault in `~/.config/danfault/vault.yaml`. Each tool below (except `obsidian_list_vaults`) takes an optional `vault` name; without it, the vault is picked as in `danfault vault which`.
 
 | Tool | What it does |
 |---|---|

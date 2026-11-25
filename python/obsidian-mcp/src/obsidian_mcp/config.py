@@ -9,7 +9,10 @@ Resolve vaults from the machine-local danfault config (same file `danfault vault
         path: ~/path/to/vault
         db: ~/path/to/main.db   # optional; default: <this project>/data/<name>.db
 """
+import json
 import os
+import re
+import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -59,12 +62,46 @@ def list_vaults() -> list[Vault]:
     return [_vault(n, e or {}, default) for n, e in (cfg.get("vaults") or {}).items()]
 
 
+def _repo_vault(vaults: dict) -> str | None:
+    """The vault with a project whose project.json "repos" lists the origin of the git repo at cwd.
+
+    Same rule as `danfault vault which`.
+    """
+    try:
+        r = subprocess.run(["git", "remote", "get-url", "origin"], capture_output=True, text=True)
+    except FileNotFoundError:
+        return None
+    m = re.search(r"[:/]([^/:]+/[^/]+?)(?:\.git)?/?$", r.stdout.strip()) if r.returncode == 0 else None
+    if not m:
+        return None
+    repo = m.group(1).lower()
+    for name, entry in vaults.items():
+        if not (entry or {}).get("path"):
+            continue
+        for pj in sorted((Path(os.path.expanduser(entry["path"])) / "01-projects").glob("*/project.json")):
+            try:
+                repos = json.loads(pj.read_text(encoding="utf-8")).get("repos") or []
+            except (ValueError, AttributeError):
+                continue
+            if isinstance(repos, list) and repo in [str(x).lower() for x in repos]:
+                return name
+    return None
+
+
+def _cwd_vault(vaults: dict) -> str | None:
+    cwd = Path.cwd().resolve()
+    for name, entry in vaults.items():
+        if (entry or {}).get("path") and cwd.is_relative_to(Path(os.path.expanduser(entry["path"])).resolve()):
+            return name
+    return None
+
+
 def resolve(name: str | None = None) -> Vault:
-    """Return the named vault, or `default_vault` when no name is given."""
+    """Return the vault to use: name > $DANFAULT_VAULT > vault linked to the cwd's repo > vault containing cwd > default_vault."""
     cfg = _load()
     vaults = cfg.get("vaults") or {}
     default = cfg.get("default_vault")
-    name = name or default
+    name = name or os.environ.get("DANFAULT_VAULT") or _repo_vault(vaults) or _cwd_vault(vaults) or default
     if not name:
         raise ValueError("No vault given and no default_vault in config.")
     if name not in vaults:

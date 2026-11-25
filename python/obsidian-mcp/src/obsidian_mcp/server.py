@@ -9,7 +9,7 @@ Tools:
     obsidian_get_context Formatted context block for prompt injection
 
 Every tool except obsidian_list_vaults takes an optional `vault` name; without
-it, the config's default_vault is used. Vaults come from
+it, the vault is picked as in `danfault vault which`. Vaults come from
 ~/.config/danfault/vault.yaml (see obsidian_mcp.config), re-read on each call so
 newly registered vaults work without restarting the server.
 """
@@ -78,7 +78,7 @@ def obsidian_search(query: str, limit: int = 5, max_tokens: int = 2000, vault: s
         query: Natural language or keyword query.
         limit: Maximum number of chunks to return (default 5).
         max_tokens: Approximate token budget for returned content (default 2000).
-        vault: Vault name from obsidian_list_vaults (default: the configured default vault).
+        vault: Vault name from obsidian_list_vaults (default: the vault for the current repo or directory; see `danfault vault which`).
     """
     try:
         v = _indexed_vault(vault)
@@ -103,7 +103,7 @@ def obsidian_read_note(file_path: str, vault: str = "") -> str:
 
     Args:
         file_path: Vault-relative path, e.g. '03-resources/quark-engine-architecture.md'
-        vault: Vault name from obsidian_list_vaults (default: the configured default vault).
+        vault: Vault name from obsidian_list_vaults (default: the vault for the current repo or directory; see `danfault vault which`).
     """
     try:
         v = config.resolve(vault or None)
@@ -125,7 +125,7 @@ def obsidian_list_notes(folder: str = "", tag: str = "", limit: int = 20, vault:
         folder: Vault-relative folder prefix, e.g. '01-projects' (optional).
         tag: Filter by tag value, e.g. 'quark' (optional).
         limit: Max notes to return (default 20).
-        vault: Vault name from obsidian_list_vaults (default: the configured default vault).
+        vault: Vault name from obsidian_list_vaults (default: the vault for the current repo or directory; see `danfault vault which`).
     """
     try:
         v = _indexed_vault(vault)
@@ -166,7 +166,7 @@ def obsidian_get_context(topic: str, max_tokens: int = 1500, vault: str = "") ->
     Args:
         topic: The topic or question to retrieve context for.
         max_tokens: Approximate token budget (default 1500).
-        vault: Vault name from obsidian_list_vaults (default: the configured default vault).
+        vault: Vault name from obsidian_list_vaults (default: the vault for the current repo or directory; see `danfault vault which`).
     """
     try:
         v = _indexed_vault(vault)

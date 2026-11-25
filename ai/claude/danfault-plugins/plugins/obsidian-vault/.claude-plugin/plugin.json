@@ -1,6 +1,6 @@
 {
   "name": "obsidian-vault",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Skills to work with an Obsidian vault: capture notes, write daily logs and session reports, scaffold projects, track projects and tasks, back the vault up with git, and reindex the obsidian-mcp search index. Resolves vault paths with `danfault vault`.",
   "author": {
     "name": "Danilo Calhes"
