@@ -32,7 +32,20 @@ Locations and domains are read from a machine-local config (never committed):
 | `danfault vault domains [--vault NAME]` | The vault's declared note domains, one per line |
 | `danfault vault repos [--github]` | Every configured repo's path (or `owner/repo` slug) |
 | `danfault vault repo NAME [--github]` | One repo's path (or its `owner/repo` slug) |
-| `danfault vault init NAME --path DIR [--domain D]... [--default]` | Create a vault with the standard layout and register it in the config |
+| `danfault vault init NAME --path DIR [--domain D]... [--default] [--github]` | Create a vault with the standard layout and register it in the config. `--github` also runs `git init` and links a private repo `NAME-obsidian-vault` (no commit) |
+
+### Projects and Tasks
+
+Read from `01-projects/<project>/` (`SUMMARY.md`, optional `project.json`, `tasks/<task>.md`). Every command takes `--vault NAME`.
+
+| Command | Returns |
+|---|---|
+| `danfault vault list projects [--status S]` | Projects with title, status and task count |
+| `danfault vault tasks [--project P] [--status S]` | Task notes from `tasks/` |
+| `danfault vault project init P [--title T] [--domain D] [--goal G] [--status S]` | Creates a project, or adds what an existing one is missing; never overwrites |
+| `danfault vault project set-status P S` | Writes the status to `P/project.json`; `SUMMARY.md` is not touched |
+| `danfault vault task set-status P T S` | Writes task `T`'s status to `P/project.json`; the task note is not touched |
+| `danfault vault health-check [--project P]` | Status divergences, missing statuses, malformed metadata; lists projects without `project.json` |
 
 Skills use these instead of hardcoding paths, so the same skill works on any
 machine and across separate work/personal vaults.
@@ -47,7 +60,9 @@ machine and across separate work/personal vaults.
 | `/obsidian-vault:obsidian-index --full` | Full reindex — clears and rebuilds the entire index |
 | `/obsidian-vault:vault-session-review` | Review session: suggest captures, report, and **update `status.md`** |
 | `/obsidian-vault:vault-report` | Write a dated session report to a project's `reports/` folder |
-| `/obsidian-vault:project-init` | Scaffold a new project in `01-projects/` with SUMMARY.md + folders |
+| `/obsidian-vault:project-init` | Scaffold a new project (or enhance an existing one) via `danfault vault project init` |
+| `/obsidian-vault:vault-git-setup` | Back the vault up to a private GitHub repo with the Obsidian Git plugin, or attach another machine (asks before each step) |
+| `/obsidian-vault:vault-tasks` | List projects/tasks, add a task, change a project's status, check metadata health (Claude also uses it on its own) |
 | `/obsidian-vault:vault-help` | Show this reference |
 
 ### MCP Tools (available in any Claude session)
@@ -95,6 +110,8 @@ vault/
 | File/Folder | Purpose | Indexed? |
 |---|---|---|
 | `SUMMARY.md` | Stable overview, goal, key links | ✅ |
+| `project.json` | CLI metadata (`status`, `tasks` statuses); wins over the notes | ❌ |
+| `tasks/` | One note per task | ✅ |
 | `status.md` | Live status — overwrite each session | ✅ |
 | `learnings/` | Durable platform knowledge | ✅ |
 | `documents/` | Reference docs, PRDs | ✅ |

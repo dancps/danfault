@@ -23,10 +23,20 @@ CLI::
     danfault vault domains [--vault NAME]     # allowed note domains, one per line
     danfault vault repos [--github]           # every repo's path (or owner/repo)
     danfault vault repo NAME [--github]       # one repo's path (or owner/repo)
-    danfault vault init NAME --path DIR       # create a new vault and register it
+    danfault vault init NAME --path DIR [--github]  # create a new vault and register it
+    danfault vault list projects [--status S] # projects in 01-projects/
+    danfault vault tasks [--project P] [--status S]  # notes in 01-projects/*/tasks/
+    danfault vault project init P [--title T] [--domain D] [--goal G] [--status S]  # create or enhance P
+    danfault vault project set-status P S     # write status into P/project.json
+    danfault vault task set-status P T S      # write task T's status into P/project.json
+    danfault vault health-check [--project P] # report metadata divergences
 """
 
+import json
 import os
+import subprocess
+from dataclasses import dataclass, field
+from datetime import date
 from pathlib import Path
 from typing import List, Optional
 
@@ -178,13 +188,36 @@ status: active
 | Folder | Purpose |
 |--------|---------|
 | `00-inbox/` | Unsorted captures pending triage. New notes land here first. |
-| `01-projects/` | Project documentation. Create one with `/project-init`. |
+| `01-projects/` | Project documentation and tasks. Create one with `/project-init`. See [Projects and Tasks](#projects-and-tasks). |
 | `02-areas/` | Ongoing responsibilities and runbooks. |
 | `03-resources/` | Reference material and guides. |
 | `04-archive/` | Retired material. `04-archive/feedbacks/` is excluded from the index. |
 | `06-daily/` | Daily notes, named `YYYY-MM-DD`. Excluded from the index. |
 | `07-templates/` | Note templates. Excluded from the index. |
 | `08-attachments/` | Binary files. Excluded from the index. |
+
+## Projects and Tasks
+
+Each project lives in `01-projects/<project>/`. The `danfault vault` CLI reads this layout:
+
+| Path | Purpose |
+|------|---------|
+| `SUMMARY.md` | Project overview. The CLI reads `title` and `status` from its frontmatter. |
+| `project.json` | Optional metadata written by the CLI: the project's `status` and a `tasks` map of task statuses. It wins over the notes. |
+| `tasks/<task>.md` | One note per task, with `title`, `status` and `created` in the frontmatter. |
+
+```bash
+danfault vault list projects [--status S]        # projects, status and task count
+danfault vault tasks [--project P] [--status S]  # task notes
+danfault vault project init P [--title T] ...    # create a project, or add what it is missing
+danfault vault project set-status P S            # write status to P/project.json
+danfault vault task set-status P T S             # write task T's status to P/project.json
+danfault vault health-check [--project P]        # divergences, missing statuses, projects without project.json
+```
+
+`set-status` does not edit `SUMMARY.md` or task notes. Update the note by hand, and use `health-check` to find what is out of sync.
+
+**Syncing:** Obsidian Sync skips `project.json` (not a note) and dot-files (`.indexignore`, `.gitkeep`). Back the vault up with git (Obsidian Git plugin); run `/obsidian-vault:vault-git-setup` to set it up. If you rely only on Sync, turn on *Settings → Sync → Selective sync → Sync all other types* on every device.
 
 ## Indexing
 
@@ -260,6 +293,49 @@ def _write_if_missing(path: Path, content: str) -> bool:
     return True
 
 
+GITIGNORE = """\
+.obsidian/workspace*.json
+.obsidian/cache
+.trash/
+"""
+
+
+def _run(*cmd: str, cwd: Optional[Path] = None) -> str:
+    try:
+        result = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True)
+    except FileNotFoundError:
+        typer.secho(f"`{cmd[0]}` is not installed.", fg="red", err=True)
+        raise typer.Exit(1)
+    if result.returncode != 0:
+        typer.secho(f"`{' '.join(cmd)}` failed: {result.stderr.strip()}", fg="red", err=True)
+        raise typer.Exit(1)
+    return result.stdout.strip()
+
+
+def _setup_github(root: Path, repo: str) -> None:
+    """git init the vault and link a private GitHub repo as origin. Never commits."""
+    state = "created" if _write_if_missing(root / ".gitignore", GITIGNORE) else "kept existing"
+    typer.echo(f"{state}: .gitignore")
+    if (root / ".git").exists():
+        typer.echo("kept existing: .git")
+    else:
+        _run("git", "init", "-b", "main", cwd=root)
+        typer.echo("created: .git (branch main)")
+    if "origin" in _run("git", "remote", cwd=root).split():
+        url = _run("git", "remote", "get-url", "origin", cwd=root)
+        typer.echo(f"kept existing: remote origin ({url})")
+        return
+    owner = _run("gh", "api", "user", "--jq", ".login")
+    if subprocess.run(["gh", "repo", "view", f"{owner}/{repo}"], capture_output=True).returncode == 0:
+        typer.echo(f"kept existing: GitHub repo {owner}/{repo}")
+    else:
+        _run("gh", "repo", "create", repo, "--private")
+        typer.echo(f"created: private GitHub repo {owner}/{repo}")
+    # SSH, so the Flatpak Obsidian can push with the host's ssh-agent.
+    _run("git", "remote", "add", "origin", f"git@github.com:{owner}/{repo}.git", cwd=root)
+    typer.echo(f"added: remote origin git@github.com:{owner}/{repo}.git")
+
+
 def _save_config(cfg: dict) -> None:
     """Write the config back, keeping a ``.bak`` of the previous file (safe_dump drops comments)."""
     path = _config_path()
@@ -277,11 +353,15 @@ def init(
     vault_path: Path = typer.Option(..., "--path", help="Directory for the vault (created if missing)"),
     domain: List[str] = typer.Option([], "--domain", help="Allowed note domain (repeatable)"),
     default: bool = typer.Option(False, "--default", help="Make this the default_vault"),
+    github: bool = typer.Option(
+        False, "--github", help="Also git init the vault and create a private GitHub repo NAME-obsidian-vault as origin"
+    ),
 ):
     """Create a vault with the standard layout and register it in the config.
 
     Existing files are never overwritten, so it is safe to run on an existing vault.
     Fails if NAME is already registered with a different path.
+    With --github, also adds a .gitignore, runs git init and links a private GitHub repo. It never commits.
     """
     cfg = _load(required=False)
     vaults = cfg.get("vaults") or {}
@@ -319,9 +399,404 @@ def init(
         _save_config(cfg)
         typer.echo(f"Registered vault '{name}' in {_config_path()}")
 
+    if github:
+        _setup_github(root, f"{name}-obsidian-vault")
+
     mcp_project = Path(__file__).resolve().parents[2] / "obsidian-mcp"
     typer.echo("\nNext steps:")
     typer.echo("  1. Build the search index:")
     typer.echo(f'     uv run --project "{mcp_project}" obsidian-index --vault {name} --full')
     typer.echo("  2. If not done yet on this machine, register the MCP server once (it serves every vault in the config):")
     typer.echo(f'     claude mcp add obsidian --scope user -- uv run --project "{mcp_project}" obsidian-mcp')
+    if github:
+        typer.echo("  3. Scan for secrets, then make the first commit and push:")
+        typer.echo(f"     cd \"{root}\" && uvx detect-secrets scan --all-files --exclude-files '^\\.git/' .")
+        typer.echo("     git add -A && git commit -m 'vault: initial commit' && git push -u origin main")
+        typer.echo("  4. Set up the Obsidian Git plugin: /obsidian-vault:vault-git-setup")
+
+
+# Projects and tasks are read from the folder layout, so existing notes need no changes:
+#   01-projects/<project>/SUMMARY.md       project metadata (frontmatter, read-only)
+#   01-projects/<project>/project.json     optional; written by the CLI, wins over SUMMARY.md
+#   01-projects/<project>/tasks/<task>.md  one note per task (frontmatter)
+
+PROJECT_JSON = "project.json"
+PROJECT_FOLDERS = ["tasks", "learnings", "documents", "reports"]
+
+SUMMARY_TEMPLATE = """\
+---
+title: {title}
+type: project
+domain: {domain}
+tags: []
+status: {status}
+created: {created}
+---
+
+# {title}
+
+**Goal:** {goal}
+
+## Current Status
+
+> Update this section each session.
+
+## Folder Structure
+
+| Folder | Purpose |
+|--------|---------|
+| `tasks/` | One note per task. List them with `danfault vault tasks --project {name}` |
+| `learnings/` | Reusable platform knowledge discovered during this project |
+| `documents/` | Reference docs, PRDs, external material |
+| `reports/` | Session outputs, validation results, analysis |
+
+## Key Links
+
+_(add links to PRs, notebooks, docs here)_
+
+## Notes for Next Session
+
+_(update before closing each session)_
+"""
+
+list_app = typer.Typer(help="List things inferred from the vault's folder structure.")
+app.add_typer(list_app, name="list")
+project_app = typer.Typer(help="Create projects and change their metadata (in project.json).")
+app.add_typer(project_app, name="project")
+task_app = typer.Typer(help="Change a task's metadata (in its project's project.json).")
+app.add_typer(task_app, name="task")
+
+
+def _vault_root(vault: Optional[str]) -> Path:
+    _, v = _resolve_vault(_load(), vault)
+    if not v.get("path"):
+        typer.secho("Vault has no 'path' set.", fg="red", err=True)
+        raise typer.Exit(1)
+    return Path(_expand(v["path"]))
+
+
+def _parse_frontmatter(path: Path) -> dict:
+    """Return the frontmatter mapping ({} if the note has none). Raise ValueError if it is malformed."""
+    text = path.read_text(encoding="utf-8")
+    if not text.startswith("---"):
+        return {}
+    end = text.find("\n---", 3)
+    if end == -1:
+        raise ValueError("frontmatter is not closed with ---")
+    try:
+        data = yaml.safe_load(text[3:end])
+    except yaml.YAMLError as e:
+        mark = getattr(e, "problem_mark", None)
+        where = f" (line {mark.line + 1})" if mark else ""
+        raise ValueError(f"invalid YAML in frontmatter{where}: {getattr(e, 'problem', None) or e}") from e
+    if data is not None and not isinstance(data, dict):
+        raise ValueError("frontmatter is not a mapping")
+    return data or {}
+
+
+def _frontmatter(path: Path) -> dict:
+    try:
+        return _parse_frontmatter(path)
+    except ValueError:
+        return {}
+
+
+@dataclass
+class _ProjectInfo:
+    path: Path
+    title: str = ""
+    md_status: Optional[str] = None
+    json_status: Optional[str] = None
+    json_tasks: dict = field(default_factory=dict)
+    errors: List[str] = field(default_factory=list)
+
+    @property
+    def status(self) -> str:
+        return self.json_status or self.md_status or "unknown"
+
+    @property
+    def diverged(self) -> bool:
+        return bool(self.json_status and self.md_status and self.json_status != self.md_status)
+
+
+def _read_project_json(path: Path) -> dict:
+    """Return project.json ({} if missing). Raise ValueError if it is malformed."""
+    if not path.exists():
+        return {}
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as e:
+        raise ValueError(f"invalid {PROJECT_JSON}: {e}") from e
+    if not isinstance(data, dict):
+        raise ValueError(f"{PROJECT_JSON} is not an object")
+    return data
+
+
+def _read_project(path: Path) -> _ProjectInfo:
+    info = _ProjectInfo(path)
+    summary = path / "SUMMARY.md"
+    if summary.exists():
+        try:
+            meta = _parse_frontmatter(summary)
+            info.title = str(meta.get("title") or "")
+            info.md_status = meta.get("status")
+        except ValueError as e:
+            info.errors.append(f"SUMMARY.md: {e}")
+    try:
+        data = _read_project_json(path / PROJECT_JSON)
+        info.json_status = data.get("status")
+        tasks_ = data.get("tasks", {})
+        if isinstance(tasks_, dict):
+            info.json_tasks = tasks_
+        else:
+            info.errors.append(f'{PROJECT_JSON}: "tasks" is not an object')
+    except ValueError as e:
+        info.errors.append(str(e))
+    return info
+
+
+def _task_status(info: _ProjectInfo, task: Path) -> str:
+    return info.json_tasks.get(task.stem) or _frontmatter(task).get("status") or "unknown"
+
+
+def _task_divergences(info: _ProjectInfo) -> List[tuple]:
+    """(task id, project.json status, frontmatter status) for each task whose two statuses differ."""
+    out = []
+    for task in _tasks(info.path):
+        json_status, md_status = info.json_tasks.get(task.stem), _frontmatter(task).get("status")
+        if json_status and md_status and json_status != md_status:
+            out.append((task.stem, json_status, md_status))
+    return out
+
+
+def _projects(root: Path) -> List[Path]:
+    return sorted(p for p in (root / "01-projects").iterdir() if p.is_dir() and not p.name.startswith("."))
+
+
+def _project(root: Path, name: str) -> Path:
+    path = root / "01-projects" / name
+    if not path.is_dir():
+        typer.secho(f"Unknown project '{name}'. See `danfault vault list projects`.", fg="red", err=True)
+        raise typer.Exit(1)
+    return path
+
+
+def _tasks(project: Path) -> List[Path]:
+    folder = project / "tasks"
+    return sorted(folder.glob("*.md")) if folder.is_dir() else []
+
+
+def _print_table(headers: List[str], rows: List[List[str]]) -> None:
+    widths = [max(len(str(c)) for c in col) for col in zip(headers, *rows)]
+    for i, row in enumerate([headers, *rows]):
+        line = "  ".join(str(c).ljust(w) for c, w in zip(row, widths)).rstrip()
+        typer.secho(line, bold=i == 0)
+
+
+def _warn(message: str) -> None:
+    typer.secho(f"warning: {message}", fg="yellow", err=True)
+
+
+def _warn_if_diverged(infos: List[_ProjectInfo]) -> None:
+    names = [i.path.name for i in infos if i.diverged]
+    names += [f"{i.path.name}/{t}" for i in infos for t, _, _ in _task_divergences(i)]
+    if names:
+        _warn(
+            f"{PROJECT_JSON} and the notes disagree on status for: {', '.join(names)}. "
+            "See `danfault vault health-check`."
+        )
+
+
+@list_app.command("projects")
+def list_projects(
+    vault: Optional[str] = typer.Option(None, "--vault", help="Vault name (default: default_vault)"),
+    status: Optional[str] = typer.Option(None, "--status", help="Only projects with this status"),
+):
+    """List projects in 01-projects/ with their status and task count."""
+    infos = [_read_project(p) for p in _projects(_vault_root(vault))]
+    rows = [
+        [i.path.name, i.title, i.status, len(_tasks(i.path))]
+        for i in infos
+        if not status or i.status == status
+    ]
+    _print_table(["PROJECT", "TITLE", "STATUS", "TASKS"], rows)
+    _warn_if_diverged(infos)
+
+
+@app.command()
+def tasks(
+    project: Optional[str] = typer.Option(None, "--project", "-p", help="Only tasks of this project (folder name)"),
+    vault: Optional[str] = typer.Option(None, "--vault", help="Vault name (default: default_vault)"),
+    status: Optional[str] = typer.Option(None, "--status", help="Only tasks with this status"),
+):
+    """List task notes from 01-projects/<project>/tasks/. A status in project.json wins over the note's."""
+    root = _vault_root(vault)
+    projects = [_project(root, project)] if project else _projects(root)
+    infos = [_read_project(p) for p in projects]
+    rows = []
+    for info in infos:
+        for task in _tasks(info.path):
+            meta = _frontmatter(task)
+            task_status = _task_status(info, task)
+            if status and task_status != status:
+                continue
+            rows.append([info.path.name, task.stem, meta.get("title", ""), task_status, meta.get("created", "")])
+    _print_table(["PROJECT", "TASK", "TITLE", "STATUS", "CREATED"], rows)
+    _warn_if_diverged(infos)
+
+
+@project_app.command("init")
+def project_init(
+    name: str = typer.Argument(..., help="Project folder name (kebab-case)"),
+    title: Optional[str] = typer.Option(None, "--title", help="Title for a new SUMMARY.md (default: from NAME)"),
+    domain: str = typer.Option("", "--domain", help="Domain for a new SUMMARY.md (one of `danfault vault domains`)"),
+    goal: str = typer.Option("", "--goal", help="One-sentence goal for a new SUMMARY.md"),
+    status: Optional[str] = typer.Option(None, "--status", help="Status for new files (default: SUMMARY.md's, else active)"),
+    vault: Optional[str] = typer.Option(None, "--vault", help="Vault name (default: default_vault)"),
+):
+    """Create a project, or add what an existing one is missing (folders, SUMMARY.md, project.json).
+
+    Existing files are never overwritten, so it is safe to run on an existing project to enhance it.
+    """
+    cfg = _load()
+    _, v = _resolve_vault(cfg, vault)
+    domains_cfg = v.get("domains") or []
+    if domain and domains_cfg and domain not in domains_cfg:
+        typer.secho(f"Unknown domain '{domain}'. Known: {', '.join(domains_cfg)}", fg="red", err=True)
+        raise typer.Exit(1)
+    path = _vault_root(vault) / "01-projects" / name
+
+    info = _read_project(path) if path.is_dir() else _ProjectInfo(path)
+    if info.errors:
+        for e in info.errors:
+            typer.secho(f"{name}: {e}", fg="red", err=True)
+        raise typer.Exit(1)
+    if status and (path / PROJECT_JSON).exists():
+        _warn(f"--status ignored: {PROJECT_JSON} already exists. Use `danfault vault project set-status {name} {status}`.")
+    if (title or domain or goal) and (path / "SUMMARY.md").exists():
+        _warn("--title/--domain/--goal ignored: SUMMARY.md already exists.")
+    status = status or info.md_status or "active"
+
+    for folder in PROJECT_FOLDERS:
+        if (path / folder).is_dir():
+            typer.echo(f"kept existing: {folder}/")
+        else:
+            (path / folder).mkdir(parents=True)
+            (path / folder / ".gitkeep").touch()
+            typer.echo(f"created: {folder}/")
+    summary = SUMMARY_TEMPLATE.format(
+        name=name,
+        title=title or name.replace("-", " ").title(),
+        domain=domain,
+        status=status,
+        created=date.today().isoformat(),
+        goal=goal,
+    )
+    files = {
+        "SUMMARY.md": summary,
+        PROJECT_JSON: json.dumps({"status": status}, indent=2, ensure_ascii=False) + "\n",
+    }
+    for fname, content in files.items():
+        state = "created" if _write_if_missing(path / fname, content) else "kept existing"
+        typer.echo(f"{state}: {fname}")
+    if _read_project(path).diverged:
+        _warn(f"{PROJECT_JSON} and SUMMARY.md disagree on status. See `danfault vault health-check --project {name}`.")
+
+
+@project_app.command("set-status")
+def project_set_status(
+    project: str = typer.Argument(..., help="Project folder name"),
+    status: str = typer.Argument(..., help="New status, e.g. active, finished"),
+    vault: Optional[str] = typer.Option(None, "--vault", help="Vault name (default: default_vault)"),
+):
+    """Set a project's status in its project.json (created if missing). SUMMARY.md is not touched."""
+    path = _project(_vault_root(vault), project)
+    info = _read_project(path)
+    try:
+        data = _read_project_json(path / PROJECT_JSON)
+    except ValueError as e:
+        typer.secho(f"{project}: {e}. Fix it before setting the status.", fg="red", err=True)
+        raise typer.Exit(1)
+    data["status"] = status
+    (path / PROJECT_JSON).write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    typer.echo(f"{project}: {info.status} -> {status}")
+    if info.md_status and info.md_status != status:
+        _warn(
+            f"{project}/SUMMARY.md still says status: {info.md_status}. Update it to match. "
+            f"See `danfault vault health-check --project {project}`."
+        )
+
+
+@task_app.command("set-status")
+def task_set_status(
+    project: str = typer.Argument(..., help="Project folder name"),
+    task: str = typer.Argument(..., help="Task id (file name in tasks/, without .md)"),
+    status: str = typer.Argument(..., help="New status, e.g. open, done, blocked"),
+    vault: Optional[str] = typer.Option(None, "--vault", help="Vault name (default: default_vault)"),
+):
+    """Set a task's status in its project's project.json (created if missing). The task note is not touched."""
+    path = _project(_vault_root(vault), project)
+    note = path / "tasks" / f"{task}.md"
+    if not note.exists():
+        typer.secho(f"Unknown task '{task}'. See `danfault vault tasks --project {project}`.", fg="red", err=True)
+        raise typer.Exit(1)
+    info = _read_project(path)
+    if info.errors:
+        for e in info.errors:
+            typer.secho(f"{project}: {e}. Fix it before setting the status.", fg="red", err=True)
+        raise typer.Exit(1)
+    data = _read_project_json(path / PROJECT_JSON)
+    old = _task_status(info, note)
+    data.setdefault("tasks", {})[task] = status
+    (path / PROJECT_JSON).write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    typer.echo(f"{project}/{task}: {old} -> {status}")
+    md_status = _frontmatter(note).get("status")
+    if md_status and md_status != status:
+        _warn(
+            f"{project}/tasks/{task}.md still says status: {md_status}. Update it to match. "
+            f"See `danfault vault health-check --project {project}`."
+        )
+
+
+@app.command("health-check")
+def health_check(
+    project: Optional[str] = typer.Option(None, "--project", "-p", help="Only check this project (folder name)"),
+    vault: Optional[str] = typer.Option(None, "--vault", help="Vault name (default: default_vault)"),
+):
+    """Report status divergences, missing statuses and malformed metadata. Exits 1 if any issue is found.
+
+    Also lists projects without a project.json (not yet enhanced). That list is only a guide and does not
+    change the exit code.
+    """
+    root = _vault_root(vault)
+    projects = [_project(root, project)] if project else _projects(root)
+    issues = []
+    not_enhanced = [p.name for p in projects if not (p / PROJECT_JSON).exists()]
+    for p in projects:
+        info = _read_project(p)
+        issues += [(p.name, e) for e in info.errors]
+        if info.diverged:
+            issues.append((p.name, f"status differs: {PROJECT_JSON}={info.json_status}, SUMMARY.md={info.md_status}"))
+        elif info.status == "unknown" and not info.errors:
+            issues.append((p.name, f"no status in {PROJECT_JSON} or SUMMARY.md"))
+        task_files = _tasks(p)
+        for task in task_files:
+            try:
+                if not (info.json_tasks.get(task.stem) or _parse_frontmatter(task).get("status")):
+                    issues.append((p.name, f"tasks/{task.name}: no status"))
+            except ValueError as e:
+                issues.append((p.name, f"tasks/{task.name}: {e}"))
+        for t, json_status, md_status in _task_divergences(info):
+            issues.append((p.name, f"tasks/{t}.md: status differs: {PROJECT_JSON}={json_status}, note={md_status}"))
+        existing = {t.stem for t in task_files}
+        for t in sorted(set(info.json_tasks) - existing):
+            issues.append((p.name, f'{PROJECT_JSON} has task "{t}" but tasks/{t}.md does not exist'))
+    if issues:
+        _print_table(["PROJECT", "ISSUE"], [list(i) for i in issues])
+    else:
+        typer.secho("No issues found.", fg="green")
+    if not_enhanced:
+        typer.secho(f"\nNot enhanced yet (no {PROJECT_JSON}): {', '.join(not_enhanced)}", fg="yellow")
+        typer.echo("Create it with `danfault vault project init <project>`.")
+    if issues:
+        raise typer.Exit(1)
