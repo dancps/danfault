@@ -8,7 +8,7 @@ Personal Claude Code setup, applied to `~/.claude` on any machine this repo is c
 - `settings.json` — the settings keys this repo owns (`outputStyle`, `statusLine`, `hooks.PreToolUse`, `hooks.PostToolUse`); merged into `~/.claude/settings.json`, not overwritten
 - `output-styles/plain.md` — "plain" output style (ASD-STE100 plain language, answer first)
 - `statusline-command.sh` — status line: project/branch, model, context usage bar, session + daily cost, elapsed time
-- `skills/commit/SKILL.md` — the `/commit` skill: drafts a commit message to a file and hands back `git commit -F <file>` instead of committing directly (see below)
+- `skills/commit/SKILL.md` — the `/commit` skill: commits the staged change with a single-line message focused on why, with no Claude attribution (see below)
 - `danfault-plugins/` — a local Claude Code plugin marketplace (see below)
 - `install.sh` — applies all of the above
 
@@ -32,11 +32,9 @@ From a script (provisioning, dotfiles bootstrap, CI), pass `--yes`:
 
 Every conflicting file is backed up to `<file>.bak-<timestamp>` and then replaced — nothing is asked and nothing is lost. Without `--yes` and without a terminal, conflicting files are skipped (with a message) instead of failing the run.
 
-## Commit safeguard
+## Commit format
 
-`skills/commit/SKILL.md` plus the `hooks.PreToolUse` entry in `settings.json` together mean Claude never runs `git commit` directly on this machine, in any repo. Instead, ask for `/commit` (or Claude reaches for it on its own): it drafts a commit message from the staged diff, writes it to `.git/claude-commit-message.txt`, and prints the exact `git commit -F <file>` command for you to run. The hook backs this up by hard-blocking any Bash command matching `git commit`, so it can't be bypassed by just running the command directly.
-
-To remove it, delete the `git-commit-block` hook entry from `~/.claude/settings.json` (and re-run `install.sh`, or edit `settings.json` here so future installs don't bring it back).
+Claude commits directly (the old `git-commit-block` hook was removed on 2026-11-25). `skills/commit/SKILL.md` and `CLAUDE.md` fix the format: one line, focused on why, no body, and no Claude attribution (no `Co-Authored-By`, no "Generated with Claude Code", no session link). Commits to the default branch need the user's say-so. To hide Claude Code's own attribution, set `"attribution": {"commit": "", "pr": "", "sessionUrl": false}` in `~/.claude/settings.json` (`install.sh` does not merge that key).
 
 ## Vault reindex hook
 

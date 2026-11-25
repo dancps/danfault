@@ -62,8 +62,16 @@ def list_vaults() -> list[Vault]:
     return [_vault(n, e or {}, default) for n, e in (cfg.get("vaults") or {}).items()]
 
 
+def _repos_in(path: Path) -> list[str]:
+    try:
+        repos = json.loads(path.read_text(encoding="utf-8")).get("repos") or []
+    except (OSError, ValueError, AttributeError):
+        return []
+    return [str(x).lower() for x in repos] if isinstance(repos, list) else []
+
+
 def _repo_vault(vaults: dict) -> str | None:
-    """The vault with a project whose project.json "repos" lists the origin of the git repo at cwd.
+    """The first vault linked to the origin of the git repo at cwd, through <vault>/vault.json or a project.json.
 
     Same rule as `danfault vault which`.
     """
@@ -78,13 +86,11 @@ def _repo_vault(vaults: dict) -> str | None:
     for name, entry in vaults.items():
         if not (entry or {}).get("path"):
             continue
-        for pj in sorted((Path(os.path.expanduser(entry["path"])) / "01-projects").glob("*/project.json")):
-            try:
-                repos = json.loads(pj.read_text(encoding="utf-8")).get("repos") or []
-            except (ValueError, AttributeError):
-                continue
-            if isinstance(repos, list) and repo in [str(x).lower() for x in repos]:
-                return name
+        root = Path(os.path.expanduser(entry["path"]))
+        if repo in _repos_in(root / "vault.json") or any(
+            repo in _repos_in(pj) for pj in (root / "01-projects").glob("*/project.json")
+        ):
+            return name
     return None
 
 

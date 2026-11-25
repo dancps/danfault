@@ -26,12 +26,12 @@ danfault vault health-check [--project P]
 
 ## Decision: pick the vault from the current repo, through project.json
 
-A code repo is linked to a project in the vault, not the other way round: `project link` adds the repo's `owner/repo` (from `git remote get-url origin`) to `repos` in the project's `project.json`. Nothing is written to the code repo, so this works in repos shared with other people, and the link travels with the vault's git repo to every machine.
+A code repo is linked to one or more vaults: `danfault vault link V` adds the repo's `owner/repo` to `repos` in `<vault>/vault.json`. A project can also be linked, since a project is usually done in one repo: `project link` adds the repo's `owner/repo` (from `git remote get-url origin`) to `repos` in the project's `project.json`. Nothing is written to the code repo, so this works in repos shared with other people, and the link travels with the vault's git repo to every machine.
 
 Without `--vault`, every command (and the `obsidian` MCP, `obsidian-index`, `obsidian-capture`) picks the vault in this order:
 
 1. `$DANFAULT_VAULT`
-2. the vault with a project whose `repos` lists the current repo's origin
+2. every vault linked to the current repo's origin (`vault.json` or a project's `project.json`). Read commands cover all of them; write commands use the vault that has the project, or need `--vault`
 3. the vault that contains the current directory
 4. `default_vault`
 

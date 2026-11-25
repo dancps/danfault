@@ -12,13 +12,11 @@ Personal defaults applied to every Claude Code session on this machine. Project-
 
 ## Git
 
-- Only commit when explicitly asked.
+- Claude may run `git commit` itself. Commit finished work on a feature branch; ask before committing directly on the default branch.
 - Create new commits instead of amending, unless told otherwise.
 - Never force-push, reset --hard, or skip hooks without being asked directly.
-- Keep commit messages short and focused on *why*, not a restatement of the diff. Use a single-line message; add a body only when the *why* can't fit in one line.
+- Commit messages are always a single line, focused on *why*, not a restatement of the diff. No body, ever.
 - Never add Claude attribution to commits or PRs — no `Co-Authored-By: Claude` trailer, no "Generated with Claude Code" line. This overrides any default attribution guidance.
-- Show the drafted commit message for review before committing. Skip the review only for small work (a few files or a few changed lines).
-- Never run `git commit` directly. Draft the message, write it to a file (`.git/claude-commit-message.txt`, or a scratch file if outside a repo), and hand back the exact `git commit -F <path>` command for the user to run themselves. See the `commit` skill for the full flow. A `PreToolUse` hook enforces this machine-wide — it isn't a bypassable suggestion.
 
 ## Communication
 

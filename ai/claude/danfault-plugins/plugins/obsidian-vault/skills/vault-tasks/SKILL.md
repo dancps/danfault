@@ -20,7 +20,7 @@ Each project is a folder in `<vault>/01-projects/<project>/` (`<vault>` = `danfa
 
 ## Commands
 
-All commands take `--vault NAME`. Without it, the vault is `$DANFAULT_VAULT`, else the project whose `repos` lists the current repo's origin, else the vault that contains the current directory, else `default_vault`. Run `danfault vault which` to see the vault and project for the current directory.
+All commands take `--vault NAME`. Without it, the vaults are `$DANFAULT_VAULT`, else every vault linked to the current repo (`repos` in `<vault>/vault.json` or in a project's `project.json`), else the vault that contains the current directory, else `default_vault`. Read commands cover every linked vault (with a `VAULT` column); write commands use the vault that has the project, or need `--vault`. Run `danfault vault which` to see the vault and project for the current directory.
 
 | Command | Use |
 |---|---|
@@ -29,6 +29,7 @@ All commands take `--vault NAME`. Without it, the vault is `$DANFAULT_VAULT`, el
 | `danfault vault tasks [--project P] [--status S] [--all]` | Task notes, optionally for one project or one status. In a linked repo or a project folder, only that project's tasks (`--all` for every project) |
 | `danfault vault project init P [--title T] [--domain D] [--goal G] [--status S]` | Create a project, or add what an existing one is missing (folders, `SUMMARY.md`, `project.json`). Never overwrites. Use `/obsidian-vault:project-init` to collect metadata for a new project. |
 | `danfault vault project set-status P S` | Write `status: S` to `P/project.json` (creates it) |
+| `danfault vault link V [--repo owner/repo]` / `unlink V` | Link a code repo to vault `V` (`repos` in `V/vault.json`). A repo can be linked to several vaults. Nothing is written to the repo |
 | `danfault vault project link P [--repo owner/repo]` | Link a code repo to `P` (default: the current repo's origin). Nothing is written to the repo, so it is safe in shared repos |
 | `danfault vault task set-status P T S` | Write task `T`'s status to `P/project.json` (for example `done`, `blocked`) |
 | `danfault vault health-check [--project P]` | Status divergences, missing statuses, malformed metadata (exit 1); also lists projects without `project.json` (does not fail) |

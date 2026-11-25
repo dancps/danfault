@@ -37,7 +37,7 @@ Locations and domains are read from a machine-local config (never committed):
 
 ### Projects and Tasks
 
-Read from `01-projects/<project>/` (`SUMMARY.md`, optional `project.json`, `tasks/<task>.md`). Every command takes `--vault NAME`. Without it, the vault is `$DANFAULT_VAULT`, else the project linked to the current repo, else the vault that contains the current directory, else `default_vault`.
+Read from `01-projects/<project>/` (`SUMMARY.md`, optional `project.json`, `tasks/<task>.md`). Every command takes `--vault NAME`. Without it, the vaults are `$DANFAULT_VAULT`, else every vault linked to the current repo (`repos` in `<vault>/vault.json` or in a project's `project.json`), else the vault that contains the current directory, else `default_vault`. Read commands cover every linked vault (with a `VAULT` column); write commands use the vault that has the project, or need `--vault`.
 
 | Command | Returns |
 |---|---|
@@ -45,6 +45,7 @@ Read from `01-projects/<project>/` (`SUMMARY.md`, optional `project.json`, `task
 | `danfault vault tasks [--project P] [--status S] [--all]` | Task notes from `tasks/`. In a linked repo or a project folder, only that project's (`--all` for every project) |
 | `danfault vault project init P [--title T] [--domain D] [--goal G] [--status S]` | Creates a project, or adds what an existing one is missing; never overwrites |
 | `danfault vault project set-status P S` | Writes the status to `P/project.json`; `SUMMARY.md` is not touched |
+| `danfault vault link V [--repo owner/repo]` / `unlink V` | Link a code repo to vault `V` (`repos` in `V/vault.json`). A repo can be linked to several vaults. Nothing is written to the repo |
 | `danfault vault project link P [--repo owner/repo]` | Links a code repo to `P` (`repos` in `P/project.json`; default: the current repo's origin). Nothing is written to the repo |
 | `danfault vault task set-status P T S` | Writes task `T`'s status to `P/project.json`; the task note is not touched |
 | `danfault vault health-check [--project P]` | Status divergences, missing statuses, malformed metadata; lists projects without `project.json` |
