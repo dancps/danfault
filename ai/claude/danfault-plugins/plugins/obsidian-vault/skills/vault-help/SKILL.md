@@ -32,7 +32,7 @@ Locations and domains are read from a machine-local config (never committed):
 | `danfault vault domains [--vault NAME]` | The vault's declared note domains, one per line |
 | `danfault vault repos [--github]` | Every configured repo's path (or `owner/repo` slug) |
 | `danfault vault repo NAME [--github]` | One repo's path (or its `owner/repo` slug) |
-| `danfault vault init NAME --path DIR [--domain D]... [--default]` | Create a vault with the standard layout and register it in the config |
+| `danfault vault init NAME --path DIR [--domain D]... [--default] [--github]` | Create a vault with the standard layout and register it in the config. `--github` also runs `git init` and links a private repo `NAME-obsidian-vault` (no commit) |
 
 ### Projects and Tasks
 
@@ -61,6 +61,7 @@ machine and across separate work/personal vaults.
 | `/obsidian-vault:vault-session-review` | Review session: suggest captures, report, and **update `status.md`** |
 | `/obsidian-vault:vault-report` | Write a dated session report to a project's `reports/` folder |
 | `/obsidian-vault:project-init` | Scaffold a new project (or enhance an existing one) via `danfault vault project init` |
+| `/obsidian-vault:vault-git-setup` | Back the vault up to a private GitHub repo with the Obsidian Git plugin, or attach another machine (asks before each step) |
 | `/obsidian-vault:vault-tasks` | List projects/tasks, add a task, change a project's status, check metadata health (Claude also uses it on its own) |
 | `/obsidian-vault:vault-help` | Show this reference |
 

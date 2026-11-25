@@ -24,7 +24,7 @@ danfault vault health-check [--project P]
 
 ## Syncing
 
-**Obsidian Sync:** `project.json` is not a note, so Sync skips it by default. On every device, turn on *Settings → Sync → Selective sync → Sync all other types* and restart Obsidian. Files that start with `.` (for example `.indexignore`, `.gitkeep`) never sync.
+**Syncing:** Obsidian Sync skips `project.json` (not a note) and dot-files (`.indexignore`, `.gitkeep`). Back the vault up with git instead: see `docs/vault-git-backup.md` or run `/obsidian-vault:vault-git-setup`. If you rely only on Sync, turn on *Settings → Sync → Selective sync → Sync all other types* on every device.
 
 ## Enhanced projects
 

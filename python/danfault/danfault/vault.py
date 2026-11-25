@@ -23,7 +23,7 @@ CLI::
     danfault vault domains [--vault NAME]     # allowed note domains, one per line
     danfault vault repos [--github]           # every repo's path (or owner/repo)
     danfault vault repo NAME [--github]       # one repo's path (or owner/repo)
-    danfault vault init NAME --path DIR       # create a new vault and register it
+    danfault vault init NAME --path DIR [--github]  # create a new vault and register it
     danfault vault list projects [--status S] # projects in 01-projects/
     danfault vault tasks [--project P] [--status S]  # notes in 01-projects/*/tasks/
     danfault vault project init P [--title T] [--domain D] [--goal G] [--status S]  # create or enhance P
@@ -34,6 +34,7 @@ CLI::
 
 import json
 import os
+import subprocess
 from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
@@ -216,7 +217,7 @@ danfault vault health-check [--project P]        # divergences, missing statuses
 
 `set-status` does not edit `SUMMARY.md` or task notes. Update the note by hand, and use `health-check` to find what is out of sync.
 
-**Obsidian Sync:** `project.json` is not a note, so Sync skips it by default. On every device, turn on *Settings → Sync → Selective sync → Sync all other types* and restart Obsidian. Files that start with `.` (for example `.indexignore`, `.gitkeep`) never sync.
+**Syncing:** Obsidian Sync skips `project.json` (not a note) and dot-files (`.indexignore`, `.gitkeep`). Back the vault up with git (Obsidian Git plugin); run `/obsidian-vault:vault-git-setup` to set it up. If you rely only on Sync, turn on *Settings → Sync → Selective sync → Sync all other types* on every device.
 
 ## Indexing
 
@@ -292,6 +293,49 @@ def _write_if_missing(path: Path, content: str) -> bool:
     return True
 
 
+GITIGNORE = """\
+.obsidian/workspace*.json
+.obsidian/cache
+.trash/
+"""
+
+
+def _run(*cmd: str, cwd: Optional[Path] = None) -> str:
+    try:
+        result = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True)
+    except FileNotFoundError:
+        typer.secho(f"`{cmd[0]}` is not installed.", fg="red", err=True)
+        raise typer.Exit(1)
+    if result.returncode != 0:
+        typer.secho(f"`{' '.join(cmd)}` failed: {result.stderr.strip()}", fg="red", err=True)
+        raise typer.Exit(1)
+    return result.stdout.strip()
+
+
+def _setup_github(root: Path, repo: str) -> None:
+    """git init the vault and link a private GitHub repo as origin. Never commits."""
+    state = "created" if _write_if_missing(root / ".gitignore", GITIGNORE) else "kept existing"
+    typer.echo(f"{state}: .gitignore")
+    if (root / ".git").exists():
+        typer.echo("kept existing: .git")
+    else:
+        _run("git", "init", "-b", "main", cwd=root)
+        typer.echo("created: .git (branch main)")
+    if "origin" in _run("git", "remote", cwd=root).split():
+        url = _run("git", "remote", "get-url", "origin", cwd=root)
+        typer.echo(f"kept existing: remote origin ({url})")
+        return
+    owner = _run("gh", "api", "user", "--jq", ".login")
+    if subprocess.run(["gh", "repo", "view", f"{owner}/{repo}"], capture_output=True).returncode == 0:
+        typer.echo(f"kept existing: GitHub repo {owner}/{repo}")
+    else:
+        _run("gh", "repo", "create", repo, "--private")
+        typer.echo(f"created: private GitHub repo {owner}/{repo}")
+    # SSH, so the Flatpak Obsidian can push with the host's ssh-agent.
+    _run("git", "remote", "add", "origin", f"git@github.com:{owner}/{repo}.git", cwd=root)
+    typer.echo(f"added: remote origin git@github.com:{owner}/{repo}.git")
+
+
 def _save_config(cfg: dict) -> None:
     """Write the config back, keeping a ``.bak`` of the previous file (safe_dump drops comments)."""
     path = _config_path()
@@ -309,11 +353,15 @@ def init(
     vault_path: Path = typer.Option(..., "--path", help="Directory for the vault (created if missing)"),
     domain: List[str] = typer.Option([], "--domain", help="Allowed note domain (repeatable)"),
     default: bool = typer.Option(False, "--default", help="Make this the default_vault"),
+    github: bool = typer.Option(
+        False, "--github", help="Also git init the vault and create a private GitHub repo NAME-obsidian-vault as origin"
+    ),
 ):
     """Create a vault with the standard layout and register it in the config.
 
     Existing files are never overwritten, so it is safe to run on an existing vault.
     Fails if NAME is already registered with a different path.
+    With --github, also adds a .gitignore, runs git init and links a private GitHub repo. It never commits.
     """
     cfg = _load(required=False)
     vaults = cfg.get("vaults") or {}
@@ -351,12 +399,20 @@ def init(
         _save_config(cfg)
         typer.echo(f"Registered vault '{name}' in {_config_path()}")
 
+    if github:
+        _setup_github(root, f"{name}-obsidian-vault")
+
     mcp_project = Path(__file__).resolve().parents[2] / "obsidian-mcp"
     typer.echo("\nNext steps:")
     typer.echo("  1. Build the search index:")
     typer.echo(f'     uv run --project "{mcp_project}" obsidian-index --vault {name} --full')
     typer.echo("  2. If not done yet on this machine, register the MCP server once (it serves every vault in the config):")
     typer.echo(f'     claude mcp add obsidian --scope user -- uv run --project "{mcp_project}" obsidian-mcp')
+    if github:
+        typer.echo("  3. Scan for secrets, then make the first commit and push:")
+        typer.echo(f"     cd \"{root}\" && uvx detect-secrets scan --all-files --exclude-files '^\\.git/' .")
+        typer.echo("     git add -A && git commit -m 'vault: initial commit' && git push -u origin main")
+        typer.echo("  4. Set up the Obsidian Git plugin: /obsidian-vault:vault-git-setup")
 
 
 # Projects and tasks are read from the folder layout, so existing notes need no changes:
