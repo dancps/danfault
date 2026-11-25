@@ -1,6 +1,6 @@
 ---
 name: vault-tasks
-description: Track projects and tasks in the Obsidian vault with the `danfault vault` CLI — list projects and their status, list a project's tasks, add a task note, change a project's status, and check metadata health. Use when the user asks what is pending or open, what projects exist, to add or close a task, to mark a project finished/active, or whether the vault's project metadata is in sync.
+description: Track projects and tasks in the Obsidian vault with the `danfault vault` CLI — list projects and their status, create or enhance a project, list a project's tasks, add a task note, change a project's status, and check metadata health. Use when the user asks what is pending or open, what projects exist, to add or close a task, to mark a project finished/active, or whether the vault's project metadata is in sync.
 user-invocable: true
 ---
 
@@ -26,6 +26,7 @@ All commands take `--vault NAME` (default: `default_vault`).
 |---|---|
 | `danfault vault list projects [--status S]` | Projects with title, status and task count |
 | `danfault vault tasks [--project P] [--status S]` | Task notes, optionally for one project or one status |
+| `danfault vault project init P [--title T] [--domain D] [--goal G] [--status S]` | Create a project, or add what an existing one is missing (folders, `SUMMARY.md`, `project.json`). Never overwrites. Use `/obsidian-vault:project-init` to collect metadata for a new project. |
 | `danfault vault project set-status P S` | Write `status: S` to `P/project.json` (creates it) |
 | `danfault vault health-check [--project P]` | Status divergences, missing statuses, malformed metadata (exit 1); also lists projects without `project.json` (does not fail) |
 

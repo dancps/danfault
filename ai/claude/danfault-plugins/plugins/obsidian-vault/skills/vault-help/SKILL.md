@@ -42,6 +42,7 @@ Read from `01-projects/<project>/` (`SUMMARY.md`, optional `project.json`, `task
 |---|---|
 | `danfault vault list projects [--status S]` | Projects with title, status and task count |
 | `danfault vault tasks [--project P] [--status S]` | Task notes from `tasks/` |
+| `danfault vault project init P [--title T] [--domain D] [--goal G] [--status S]` | Creates a project, or adds what an existing one is missing; never overwrites |
 | `danfault vault project set-status P S` | Writes the status to `P/project.json`; `SUMMARY.md` is not touched |
 | `danfault vault health-check [--project P]` | Status divergences, missing statuses, malformed metadata; lists projects without `project.json` |
 
@@ -58,7 +59,7 @@ machine and across separate work/personal vaults.
 | `/obsidian-vault:obsidian-index --full` | Full reindex — clears and rebuilds the entire index |
 | `/obsidian-vault:vault-session-review` | Review session: suggest captures, report, and **update `status.md`** |
 | `/obsidian-vault:vault-report` | Write a dated session report to a project's `reports/` folder |
-| `/obsidian-vault:project-init` | Scaffold a new project in `01-projects/` with SUMMARY.md + folders |
+| `/obsidian-vault:project-init` | Scaffold a new project (or enhance an existing one) via `danfault vault project init` |
 | `/obsidian-vault:vault-tasks` | List projects/tasks, add a task, change a project's status, check metadata health (Claude also uses it on its own) |
 | `/obsidian-vault:vault-help` | Show this reference |
 

@@ -26,6 +26,7 @@ CLI::
     danfault vault init NAME --path DIR       # create a new vault and register it
     danfault vault list projects [--status S] # projects in 01-projects/
     danfault vault tasks [--project P] [--status S]  # notes in 01-projects/*/tasks/
+    danfault vault project init P [--title T] [--domain D] [--goal G] [--status S]  # create or enhance P
     danfault vault project set-status P S     # write status into P/project.json
     danfault vault health-check [--project P] # report metadata divergences
 """
@@ -33,6 +34,7 @@ CLI::
 import json
 import os
 from dataclasses import dataclass, field
+from datetime import date
 from pathlib import Path
 from typing import List, Optional
 
@@ -205,6 +207,7 @@ Each project lives in `01-projects/<project>/`. The `danfault vault` CLI reads t
 ```bash
 danfault vault list projects [--status S]        # projects, status and task count
 danfault vault tasks [--project P] [--status S]  # task notes
+danfault vault project init P [--title T] ...    # create a project, or add what it is missing
 danfault vault project set-status P S            # write status to P/project.json
 danfault vault health-check [--project P]        # divergences, missing statuses, projects without project.json
 ```
@@ -358,10 +361,47 @@ def init(
 #   01-projects/<project>/tasks/<task>.md  one note per task (frontmatter)
 
 PROJECT_JSON = "project.json"
+PROJECT_FOLDERS = ["tasks", "learnings", "documents", "reports"]
+
+SUMMARY_TEMPLATE = """\
+---
+title: {title}
+type: project
+domain: {domain}
+tags: []
+status: {status}
+created: {created}
+---
+
+# {title}
+
+**Goal:** {goal}
+
+## Current Status
+
+> Update this section each session.
+
+## Folder Structure
+
+| Folder | Purpose |
+|--------|---------|
+| `tasks/` | One note per task. List them with `danfault vault tasks --project {name}` |
+| `learnings/` | Reusable platform knowledge discovered during this project |
+| `documents/` | Reference docs, PRDs, external material |
+| `reports/` | Session outputs, validation results, analysis |
+
+## Key Links
+
+_(add links to PRs, notebooks, docs here)_
+
+## Notes for Next Session
+
+_(update before closing each session)_
+"""
 
 list_app = typer.Typer(help="List things inferred from the vault's folder structure.")
 app.add_typer(list_app, name="list")
-project_app = typer.Typer(help="Change a project's metadata (in project.json).")
+project_app = typer.Typer(help="Create projects and change their metadata (in project.json).")
 app.add_typer(project_app, name="project")
 
 
@@ -519,6 +559,64 @@ def tasks(
     _warn_if_diverged([_read_project(p) for p in projects])
 
 
+@project_app.command("init")
+def project_init(
+    name: str = typer.Argument(..., help="Project folder name (kebab-case)"),
+    title: Optional[str] = typer.Option(None, "--title", help="Title for a new SUMMARY.md (default: from NAME)"),
+    domain: str = typer.Option("", "--domain", help="Domain for a new SUMMARY.md (one of `danfault vault domains`)"),
+    goal: str = typer.Option("", "--goal", help="One-sentence goal for a new SUMMARY.md"),
+    status: Optional[str] = typer.Option(None, "--status", help="Status for new files (default: SUMMARY.md's, else active)"),
+    vault: Optional[str] = typer.Option(None, "--vault", help="Vault name (default: default_vault)"),
+):
+    """Create a project, or add what an existing one is missing (folders, SUMMARY.md, project.json).
+
+    Existing files are never overwritten, so it is safe to run on an existing project to enhance it.
+    """
+    cfg = _load()
+    _, v = _resolve_vault(cfg, vault)
+    domains_cfg = v.get("domains") or []
+    if domain and domains_cfg and domain not in domains_cfg:
+        typer.secho(f"Unknown domain '{domain}'. Known: {', '.join(domains_cfg)}", fg="red", err=True)
+        raise typer.Exit(1)
+    path = _vault_root(vault) / "01-projects" / name
+
+    info = _read_project(path) if path.is_dir() else _ProjectInfo(path)
+    if info.errors:
+        for e in info.errors:
+            typer.secho(f"{name}: {e}", fg="red", err=True)
+        raise typer.Exit(1)
+    if status and (path / PROJECT_JSON).exists():
+        _warn(f"--status ignored: {PROJECT_JSON} already exists. Use `danfault vault project set-status {name} {status}`.")
+    if (title or domain or goal) and (path / "SUMMARY.md").exists():
+        _warn("--title/--domain/--goal ignored: SUMMARY.md already exists.")
+    status = status or info.md_status or "active"
+
+    for folder in PROJECT_FOLDERS:
+        if (path / folder).is_dir():
+            typer.echo(f"kept existing: {folder}/")
+        else:
+            (path / folder).mkdir(parents=True)
+            (path / folder / ".gitkeep").touch()
+            typer.echo(f"created: {folder}/")
+    summary = SUMMARY_TEMPLATE.format(
+        name=name,
+        title=title or name.replace("-", " ").title(),
+        domain=domain,
+        status=status,
+        created=date.today().isoformat(),
+        goal=goal,
+    )
+    files = {
+        "SUMMARY.md": summary,
+        PROJECT_JSON: json.dumps({"status": status}, indent=2, ensure_ascii=False) + "\n",
+    }
+    for fname, content in files.items():
+        state = "created" if _write_if_missing(path / fname, content) else "kept existing"
+        typer.echo(f"{state}: {fname}")
+    if _read_project(path).diverged:
+        _warn(f"{PROJECT_JSON} and SUMMARY.md disagree on status. See `danfault vault health-check --project {name}`.")
+
+
 @project_app.command("set-status")
 def project_set_status(
     project: str = typer.Argument(..., help="Project folder name"),
@@ -576,6 +674,6 @@ def health_check(
         typer.secho("No issues found.", fg="green")
     if not_enhanced:
         typer.secho(f"\nNot enhanced yet (no {PROJECT_JSON}): {', '.join(not_enhanced)}", fg="yellow")
-        typer.echo("Create it with `danfault vault project set-status <project> <status>`.")
+        typer.echo("Create it with `danfault vault project init <project>`.")
     if issues:
         raise typer.Exit(1)
