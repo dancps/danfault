@@ -34,6 +34,17 @@ Locations and domains are read from a machine-local config (never committed):
 | `danfault vault repo NAME [--github]` | One repo's path (or its `owner/repo` slug) |
 | `danfault vault init NAME --path DIR [--domain D]... [--default]` | Create a vault with the standard layout and register it in the config |
 
+### Projects and Tasks
+
+Read from `01-projects/<project>/` (`SUMMARY.md`, optional `project.json`, `tasks/<task>.md`). Every command takes `--vault NAME`.
+
+| Command | Returns |
+|---|---|
+| `danfault vault list projects [--status S]` | Projects with title, status and task count |
+| `danfault vault tasks [--project P] [--status S]` | Task notes from `tasks/` |
+| `danfault vault project set-status P S` | Writes the status to `P/project.json`; `SUMMARY.md` is not touched |
+| `danfault vault health-check [--project P]` | Status divergences, missing statuses, malformed metadata; lists projects without `project.json` |
+
 Skills use these instead of hardcoding paths, so the same skill works on any
 machine and across separate work/personal vaults.
 
@@ -48,6 +59,7 @@ machine and across separate work/personal vaults.
 | `/obsidian-vault:vault-session-review` | Review session: suggest captures, report, and **update `status.md`** |
 | `/obsidian-vault:vault-report` | Write a dated session report to a project's `reports/` folder |
 | `/obsidian-vault:project-init` | Scaffold a new project in `01-projects/` with SUMMARY.md + folders |
+| `/obsidian-vault:vault-tasks` | List projects/tasks, add a task, change a project's status, check metadata health (Claude also uses it on its own) |
 | `/obsidian-vault:vault-help` | Show this reference |
 
 ### MCP Tools (available in any Claude session)
@@ -95,6 +107,8 @@ vault/
 | File/Folder | Purpose | Indexed? |
 |---|---|---|
 | `SUMMARY.md` | Stable overview, goal, key links | ✅ |
+| `project.json` | CLI metadata (`status`); wins over `SUMMARY.md` | ❌ |
+| `tasks/` | One note per task | ✅ |
 | `status.md` | Live status — overwrite each session | ✅ |
 | `learnings/` | Durable platform knowledge | ✅ |
 | `documents/` | Reference docs, PRDs | ✅ |
