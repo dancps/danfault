@@ -68,6 +68,7 @@ danfault = "danfault"
 danfault = "danfault.main:app"
 rmatlab = "danfault.matlab:main"
 coffee = "danfault.coffee:main"
+ccanalyze = "danfault.ccanalyze:main"
 spoti = "danfault.spotify:app"
 
 [tool.pytest.ini_options]
