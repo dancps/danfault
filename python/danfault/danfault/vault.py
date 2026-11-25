@@ -184,13 +184,32 @@ status: active
 | Folder | Purpose |
 |--------|---------|
 | `00-inbox/` | Unsorted captures pending triage. New notes land here first. |
-| `01-projects/` | Project documentation. Create one with `/project-init`. |
+| `01-projects/` | Project documentation and tasks. Create one with `/project-init`. See [Projects and Tasks](#projects-and-tasks). |
 | `02-areas/` | Ongoing responsibilities and runbooks. |
 | `03-resources/` | Reference material and guides. |
 | `04-archive/` | Retired material. `04-archive/feedbacks/` is excluded from the index. |
 | `06-daily/` | Daily notes, named `YYYY-MM-DD`. Excluded from the index. |
 | `07-templates/` | Note templates. Excluded from the index. |
 | `08-attachments/` | Binary files. Excluded from the index. |
+
+## Projects and Tasks
+
+Each project lives in `01-projects/<project>/`. The `danfault vault` CLI reads this layout:
+
+| Path | Purpose |
+|------|---------|
+| `SUMMARY.md` | Project overview. The CLI reads `title` and `status` from its frontmatter. |
+| `project.json` | Optional metadata written by the CLI (for example `status`). It wins over `SUMMARY.md`. |
+| `tasks/<task>.md` | One note per task, with `title`, `status` and `created` in the frontmatter. |
+
+```bash
+danfault vault list projects [--status S]        # projects, status and task count
+danfault vault tasks [--project P] [--status S]  # task notes
+danfault vault project set-status P S            # write status to P/project.json
+danfault vault health-check [--project P]        # divergences, missing statuses, projects without project.json
+```
+
+`set-status` does not edit `SUMMARY.md`. Update the note by hand, and use `health-check` to find what is out of sync.
 
 ## Indexing
 

@@ -1,6 +1,6 @@
 ---
 name: project-init
-description: Initialize a new project in the Obsidian vault's 01-projects/ folder with a standard structure (SUMMARY.md, learnings/, documents/, reports/).
+description: Initialize a new project in the Obsidian vault's 01-projects/ folder with a standard structure (SUMMARY.md, project.json, tasks/, learnings/, documents/, reports/).
 user-invocable: true
 ---
 
@@ -32,6 +32,7 @@ Use when starting a new project that warrants tracking in the vault.
    ```
    <vault>/01-projects/<project-name>/
      SUMMARY.md
+     tasks/          (empty, create a .gitkeep)
      learnings/      (empty, create a .gitkeep)
      documents/      (empty, create a .gitkeep)
      reports/        (empty, create a .gitkeep)
@@ -61,6 +62,7 @@ Use when starting a new project that warrants tracking in the vault.
 
    | Folder | Purpose |
    |--------|---------|
+   | `tasks/` | One note per task. List them with `danfault vault tasks --project <project-name>` |
    | `learnings/` | Reusable platform knowledge discovered during this project |
    | `documents/` | Reference docs, PRDs, external material |
    | `reports/` | Session outputs, validation results, analysis |
@@ -74,9 +76,14 @@ Use when starting a new project that warrants tracking in the vault.
    _(update before closing each session)_
    ```
 
-5. **Trigger reindex:**
+5. **Create `project.json`** so the project is "enhanced" from the start (see the vault README, section "Projects and Tasks"):
+   ```bash
+   danfault vault project set-status <project-name> <status>
+   ```
+
+6. **Trigger reindex:**
    ```bash
    uv run --project ~/danfault/python/obsidian-mcp obsidian-index
    ```
 
-6. **Confirm** — tell the user the path and suggest: "Use `/vault-review` at the end of each session to capture learnings here."
+7. **Confirm** — tell the user the path and suggest: "Add tasks as notes in `tasks/` (frontmatter `title`, `type: task`, `status`, `created`). Use `danfault vault tasks --project <project-name>` to list them, `danfault vault health-check` to find out-of-sync metadata, and `/vault-review` at the end of each session to capture learnings here."
