@@ -216,6 +216,8 @@ danfault vault health-check [--project P]        # divergences, missing statuses
 
 `set-status` does not edit `SUMMARY.md` or task notes. Update the note by hand, and use `health-check` to find what is out of sync.
 
+**Obsidian Sync:** `project.json` is not a note, so Sync skips it by default. On every device, turn on *Settings → Sync → Selective sync → Sync all other types* and restart Obsidian. Files that start with `.` (for example `.indexignore`, `.gitkeep`) never sync.
+
 ## Indexing
 
 `.indexignore` lists the paths that the indexer skips.

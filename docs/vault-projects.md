@@ -22,6 +22,10 @@ danfault vault health-check [--project P]
 - Task statuses follow the same rule: `task set-status` writes `"tasks": {"<task id>": "<status>"}` in the project's `project.json`, which wins over the task's frontmatter.
 - When `project.json` and a note disagree, the commands print a warning to stderr. `set-status` reminds you to update the note. `health-check` lists every divergence (and `tasks` entries without a note) and exits 1.
 
+## Syncing
+
+**Obsidian Sync:** `project.json` is not a note, so Sync skips it by default. On every device, turn on *Settings → Sync → Selective sync → Sync all other types* and restart Obsidian. Files that start with `.` (for example `.indexignore`, `.gitkeep`) never sync.
+
 ## Enhanced projects
 
 A project with a `project.json` is "enhanced". `health-check` lists projects that are not enhanced yet, as a guide for migrating old projects and keeping new ones up to date. This list does not change the exit code.
