@@ -33,7 +33,7 @@ A new vault then only needs an entry in `vault.yaml` and an index run. The serve
 
 ## Tools
 
-Every tool except `obsidian_list_vaults` takes an optional `vault` name; without it, `default_vault` is used.
+Every tool except `obsidian_list_vaults` takes an optional `vault` name. Without it, the vault is: `$DANFAULT_VAULT`, else the first vault linked to the current repo (`repos` in `vault.json` or a `project.json`), else the vault that contains the current directory, else `default_vault`. Check with `danfault vault which`.
 
 | Tool | What it does |
 |---|---|

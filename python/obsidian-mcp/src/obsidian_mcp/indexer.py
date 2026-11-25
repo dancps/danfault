@@ -168,7 +168,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Index Obsidian vault into SQLite")
     parser.add_argument("--full", action="store_true", help="Full reindex (ignore mtimes)")
     target = parser.add_mutually_exclusive_group()
-    target.add_argument("--vault", help="Vault name from ~/.config/danfault/vault.yaml (default: default_vault)")
+    target.add_argument("--vault", help="Vault name from ~/.config/danfault/vault.yaml (default: see `danfault vault which`)")
     target.add_argument(
         "--for-file",
         metavar="PATH",

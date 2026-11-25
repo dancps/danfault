@@ -70,7 +70,7 @@ def main() -> None:
     parser.add_argument("--title", help="Note title (defaults to timestamp)")
     parser.add_argument("--domain", help="Domain tag, e.g. credit-card, data-platform")
     parser.add_argument("--tags", nargs="*", default=[], help="Additional tags")
-    parser.add_argument("--vault", help="Vault name from ~/.config/danfault/vault.yaml (default: default_vault)")
+    parser.add_argument("--vault", help="Vault name from ~/.config/danfault/vault.yaml (default: see `danfault vault which`)")
     args = parser.parse_args()
 
     try:

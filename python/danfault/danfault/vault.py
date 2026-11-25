@@ -29,11 +29,21 @@ CLI::
     danfault vault project init P [--title T] [--domain D] [--goal G] [--status S]  # create or enhance P
     danfault vault project set-status P S     # write status into P/project.json
     danfault vault task set-status P T S      # write task T's status into P/project.json
+    danfault vault link V [--repo owner/repo] # link a code repo to vault V (in V/vault.json)
+    danfault vault unlink V [--repo owner/repo]
+    danfault vault project link P [--repo owner/repo]  # link a code repo to P (in P/project.json)
+    danfault vault which                      # which vaults/project are used here, and why
     danfault vault health-check [--project P] # report metadata divergences
+
+Without --vault, the vaults are: $DANFAULT_VAULT, else every vault linked to the current repo's
+origin (vault.json or a project's project.json), else the vault that contains the current
+directory, else default_vault. Read commands cover every linked vault; write commands use the
+one that has the project.
 """
 
 import json
 import os
+import re
 import subprocess
 from dataclasses import dataclass, field
 from datetime import date
@@ -77,23 +87,147 @@ def _expand(p: str) -> str:
     return os.path.expanduser(str(p))
 
 
-def _resolve_vault(cfg: dict, name: Optional[str]) -> tuple[str, dict]:
+def _git_remote(cwd: Path) -> Optional[str]:
+    """owner/repo (lowercase) of the origin remote of the git repo at cwd, or None."""
+    try:
+        r = subprocess.run(["git", "-C", str(cwd), "remote", "get-url", "origin"], capture_output=True, text=True)
+    except FileNotFoundError:
+        return None
+    m = re.search(r"[:/]([^/:]+/[^/]+?)(?:\.git)?/?$", r.stdout.strip()) if r.returncode == 0 else None
+    return m.group(1).lower() if m else None
+
+
+def _repo_arg(repo: Optional[str]) -> str:
+    """The --repo value, or the current repo's origin. Exits 1 if neither is an owner/repo."""
+    repo = (repo or _git_remote(Path.cwd()) or "").strip().lower()
+    if not re.fullmatch(r"[^/\s]+/[^/\s]+", repo):
+        typer.secho("Not in a git repo with an origin remote. Pass --repo owner/repo.", fg="red", err=True)
+        raise typer.Exit(1)
+    return repo
+
+
+def _repos_in(path: Path) -> List[str]:
+    """Lowercase "repos" of a vault.json or project.json ([] if missing or malformed)."""
+    try:
+        repos_ = _read_project_json(path).get("repos") or []
+    except ValueError:
+        return []
+    return [str(r).lower() for r in repos_] if isinstance(repos_, list) else []
+
+
+def _vault_paths(cfg: dict) -> dict:
+    return {n: Path(_expand(v["path"])) for n, v in (cfg.get("vaults") or {}).items() if (v or {}).get("path")}
+
+
+def _linked_projects(cfg: dict, repo: str) -> List[tuple]:
+    """(vault, project) pairs whose project.json lists repo in "repos"."""
+    return [
+        (name, pj.parent.name)
+        for name, root in _vault_paths(cfg).items()
+        for pj in sorted((root / "01-projects").glob(f"*/{PROJECT_JSON}"))
+        if repo in _repos_in(pj)
+    ]
+
+
+def _linked_vaults(cfg: dict, repo: str) -> List[str]:
+    """Vaults linked to repo, in config order: through <vault>/vault.json or through one of their projects."""
+    by_project = {v for v, _ in _linked_projects(cfg, repo)}
+    return [n for n, root in _vault_paths(cfg).items() if n in by_project or repo in _repos_in(root / VAULT_JSON)]
+
+
+@dataclass
+class _Context:
+    vaults: List[str]
+    reason: str
+    project: Optional[tuple] = None
+    repo: Optional[str] = None
+
+    @property
+    def vault(self) -> str:
+        return self.vaults[0]
+
+
+def _context(cfg: dict, name: Optional[str]) -> _Context:
+    """Pick the vaults: --vault > $DANFAULT_VAULT > vaults linked to this repo > vault containing cwd > default_vault."""
     vaults = cfg.get("vaults") or {}
-    name = name or cfg.get("default_vault")
-    if not name:
+    cwd = Path.cwd().resolve()
+    repo = _git_remote(cwd)
+    inside = [n for n, root in _vault_paths(cfg).items() if cwd.is_relative_to(root.resolve())]
+    linked = _linked_vaults(cfg, repo) if repo else []
+    if name:
+        names, reason = [name], "--vault"
+    elif os.environ.get("DANFAULT_VAULT"):
+        names, reason = [os.environ["DANFAULT_VAULT"]], "$DANFAULT_VAULT"
+    elif linked:
+        names, reason = linked, f"repo {repo} is linked to it"
+    elif inside:
+        names, reason = inside[:1], "the current directory is inside it"
+    else:
+        names, reason = [cfg.get("default_vault")], "default_vault"
+    if not names[0]:
         typer.secho("No vault specified and no default_vault in config.", fg="red", err=True)
         raise typer.Exit(1)
-    if name not in vaults:
-        typer.secho(f"Unknown vault '{name}'. Known: {', '.join(vaults) or '(none)'}", fg="red", err=True)
+    for n in names:
+        if n not in vaults:
+            typer.secho(f"Unknown vault '{n}'. Known: {', '.join(vaults) or '(none)'}", fg="red", err=True)
+            raise typer.Exit(1)
+    projects = [(v, p) for v, p in _linked_projects(cfg, repo) if v in names] if repo else []
+    if len(projects) > 1:
+        listed = ", ".join(f"{v}/{p}" for v, p in projects)
+        _warn(f"repo {repo} is linked to several projects ({listed}); using {projects[0][1]}.")
+    project = projects[0] if projects else None
+    if not project and names[0] in inside:
+        rel = cwd.relative_to(_vault_paths(cfg)[names[0]].resolve()).parts
+        if len(rel) >= 2 and rel[0] == "01-projects":
+            project = (names[0], rel[1])
+    return _Context(names, reason, project, repo)
+
+
+def _resolve_vault(cfg: dict, name: Optional[str]) -> tuple[str, dict]:
+    """The single vault for commands that use one. Warns when the repo is linked to several."""
+    ctx = _context(cfg, name)
+    if len(ctx.vaults) > 1:
+        _warn(f"repo {ctx.repo} is linked to several vaults ({', '.join(ctx.vaults)}); using {ctx.vault}. Pass --vault.")
+    return ctx.vault, cfg["vaults"][ctx.vault] or {}
+
+
+def _roots(vault: Optional[str]) -> dict:
+    """{vault name: root} of every vault a read command covers."""
+    cfg = _load()
+    paths = _vault_paths(cfg)
+    names = _context(cfg, vault).vaults
+    missing = [n for n in names if n not in paths]
+    if missing:
+        typer.secho(f"Vault '{missing[0]}' has no 'path' set.", fg="red", err=True)
         raise typer.Exit(1)
-    return name, vaults[name] or {}
+    return {n: paths[n] for n in names}
+
+
+def _project_root(vault: Optional[str], project: str, new: bool = False) -> tuple[str, Path]:
+    """(vault, project folder) for a write command: the one covered vault that has the project.
+
+    With new=True and several covered vaults, the project must not need guessing: --vault is required.
+    """
+    roots = _roots(vault)
+    if len(roots) == 1:
+        name, root = next(iter(roots.items()))
+        return name, (root / "01-projects" / project if new else _project(root, project))
+    found = [n for n, r in roots.items() if (r / "01-projects" / project).is_dir()]
+    if len(found) == 1:
+        return found[0], roots[found[0]] / "01-projects" / project
+    where = f"in several vaults ({', '.join(found)})" if found else f"in none of {', '.join(roots)}"
+    typer.secho(f"Project '{project}' is {where}. Pass --vault.", fg="red", err=True)
+    raise typer.Exit(1)
+
+
+def _vault_option(help_: str = "Vault name (default: see `danfault vault which`)"):
+    return typer.Option(None, "--vault", help=help_)
 
 
 @app.command()
-def path(vault: Optional[str] = typer.Option(None, "--vault", help="Vault name (default: default_vault)")):
+def path(vault: Optional[str] = _vault_option()):
     """Print the absolute path to a vault."""
-    cfg = _load()
-    _, v = _resolve_vault(cfg, vault)
+    _, v = _resolve_vault(_load(), vault)
     if not v.get("path"):
         typer.secho("Vault has no 'path' set.", fg="red", err=True)
         raise typer.Exit(1)
@@ -101,7 +235,78 @@ def path(vault: Optional[str] = typer.Option(None, "--vault", help="Vault name (
 
 
 @app.command()
-def domains(vault: Optional[str] = typer.Option(None, "--vault", help="Vault name (default: default_vault)")):
+def which(vault: Optional[str] = _vault_option()):
+    """Show which vaults and project commands use here, and why.
+
+    Vault order: --vault, $DANFAULT_VAULT, the vaults linked to this git repo's origin (in <vault>/vault.json
+    or in a project's project.json), the vault that contains the current directory, default_vault.
+    """
+    cfg = _load()
+    ctx = _context(cfg, vault)
+    paths = _vault_paths(cfg)
+    for n in ctx.vaults:
+        typer.echo(f"vault:   {n} ({paths.get(n, '-')})")
+    typer.echo(f"reason:  {ctx.reason}")
+    typer.echo(f"project: {'/'.join(ctx.project) if ctx.project else '-'}")
+    typer.echo(f"repo:    {ctx.repo or '-'}")
+
+
+@app.command()
+def link(
+    vault: str = typer.Argument(..., help="Vault name"),
+    repo: Optional[str] = typer.Option(None, "--repo", help="owner/repo (default: origin of the current git repo)"),
+):
+    """Link a code repo to a vault (adds it to "repos" in <vault>/vault.json). A repo can be linked to several vaults.
+
+    Inside that repo, commands then use the linked vaults. Nothing is written to the repo.
+    """
+    root = _vault_root(vault)
+    repo = _repo_arg(repo)
+    try:
+        data = _read_project_json(root / VAULT_JSON)
+    except ValueError as e:
+        typer.secho(f"{vault}: {e}. Fix it before linking.", fg="red", err=True)
+        raise typer.Exit(1)
+    repos_ = data.setdefault("repos", [])
+    if not isinstance(repos_, list):
+        typer.secho(f'{vault}: "repos" in {VAULT_JSON} is not a list. Fix it before linking.', fg="red", err=True)
+        raise typer.Exit(1)
+    if repo in [str(r).lower() for r in repos_]:
+        typer.echo(f"{vault}: already linked to {repo}")
+        return
+    repos_.append(repo)
+    (root / VAULT_JSON).write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    typer.echo(f"{vault}: linked to {repo}")
+
+
+@app.command()
+def unlink(
+    vault: str = typer.Argument(..., help="Vault name"),
+    repo: Optional[str] = typer.Option(None, "--repo", help="owner/repo (default: origin of the current git repo)"),
+):
+    """Remove a code repo from "repos" in <vault>/vault.json. Project links (project.json) are kept."""
+    root = _vault_root(vault)
+    repo = _repo_arg(repo)
+    try:
+        data = _read_project_json(root / VAULT_JSON)
+    except ValueError as e:
+        typer.secho(f"{vault}: {e}. Fix it before unlinking.", fg="red", err=True)
+        raise typer.Exit(1)
+    repos_ = data.get("repos")
+    kept = [r for r in repos_ if str(r).lower() != repo] if isinstance(repos_, list) else repos_
+    if kept == repos_:
+        typer.echo(f"{vault}: {repo} is not in {VAULT_JSON}")
+    else:
+        data["repos"] = kept
+        (root / VAULT_JSON).write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        typer.echo(f"{vault}: unlinked {repo}")
+    projects = [p for v, p in _linked_projects(_load(), repo) if v == vault]
+    if projects:
+        _warn(f"{repo} is still linked to {vault} through project(s) {', '.join(projects)} (project.json).")
+
+
+@app.command()
+def domains(vault: Optional[str] = _vault_option()):
     """Print a vault's declared domains, one per line."""
     cfg = _load()
     _, v = _resolve_vault(cfg, vault)
@@ -203,7 +408,7 @@ Each project lives in `01-projects/<project>/`. The `danfault vault` CLI reads t
 | Path | Purpose |
 |------|---------|
 | `SUMMARY.md` | Project overview. The CLI reads `title` and `status` from its frontmatter. |
-| `project.json` | Optional metadata written by the CLI: the project's `status` and a `tasks` map of task statuses. It wins over the notes. |
+| `project.json` | Optional metadata written by the CLI: the project's `status`, a `tasks` map of task statuses and the linked code `repos`. It wins over the notes. |
 | `tasks/<task>.md` | One note per task, with `title`, `status` and `created` in the frontmatter. |
 
 ```bash
@@ -212,6 +417,9 @@ danfault vault tasks [--project P] [--status S]  # task notes
 danfault vault project init P [--title T] ...    # create a project, or add what it is missing
 danfault vault project set-status P S            # write status to P/project.json
 danfault vault task set-status P T S             # write task T's status to P/project.json
+danfault vault link V                            # link the current code repo to vault V (V/vault.json)
+danfault vault project link P                    # link the current code repo to P
+danfault vault which                             # vault and project used in the current directory
 danfault vault health-check [--project P]        # divergences, missing statuses, projects without project.json
 ```
 
@@ -421,6 +629,7 @@ def init(
 #   01-projects/<project>/tasks/<task>.md  one note per task (frontmatter)
 
 PROJECT_JSON = "project.json"
+VAULT_JSON = "vault.json"
 PROJECT_FOLDERS = ["tasks", "learnings", "documents", "reports"]
 
 SUMMARY_TEMPLATE = """\
@@ -550,6 +759,9 @@ def _read_project(path: Path) -> _ProjectInfo:
             info.json_tasks = tasks_
         else:
             info.errors.append(f'{PROJECT_JSON}: "tasks" is not an object')
+        repos_ = data.get("repos", [])
+        if not isinstance(repos_, list) or not all(isinstance(r, str) for r in repos_):
+            info.errors.append(f'{PROJECT_JSON}: "repos" is not a list of "owner/repo" strings')
     except ValueError as e:
         info.errors.append(str(e))
     return info
@@ -607,42 +819,69 @@ def _warn_if_diverged(infos: List[_ProjectInfo]) -> None:
         )
 
 
+def _selected(vault: Optional[str], project: Optional[str]) -> List[tuple]:
+    """(vault, project folder) pairs a read command covers: every project of the covered vaults, or one project."""
+    roots = _roots(vault)
+    if not project:
+        return [(n, p) for n, r in roots.items() for p in _projects(r)]
+    found = [(n, r / "01-projects" / project) for n, r in roots.items() if (r / "01-projects" / project).is_dir()]
+    if not found:
+        typer.secho(f"Unknown project '{project}'. See `danfault vault list projects`.", fg="red", err=True)
+        raise typer.Exit(1)
+    return found
+
+
+def _with_vault(headers: List[str], rows: List[list], vault_names: List[str], multi: bool) -> tuple:
+    """Add a VAULT column when the command covers several vaults."""
+    if not multi:
+        return headers, rows
+    return ["VAULT", *headers], [[v, *r] for v, r in zip(vault_names, rows)]
+
+
 @list_app.command("projects")
 def list_projects(
-    vault: Optional[str] = typer.Option(None, "--vault", help="Vault name (default: default_vault)"),
+    vault: Optional[str] = _vault_option(),
     status: Optional[str] = typer.Option(None, "--status", help="Only projects with this status"),
 ):
-    """List projects in 01-projects/ with their status and task count."""
-    infos = [_read_project(p) for p in _projects(_vault_root(vault))]
-    rows = [
-        [i.path.name, i.title, i.status, len(_tasks(i.path))]
-        for i in infos
-        if not status or i.status == status
-    ]
-    _print_table(["PROJECT", "TITLE", "STATUS", "TASKS"], rows)
-    _warn_if_diverged(infos)
+    """List projects in 01-projects/ with their status and task count. A repo linked to several vaults lists all."""
+    selected = _selected(vault, None)
+    infos = [(v, _read_project(p)) for v, p in selected]
+    kept = [(v, i) for v, i in infos if not status or i.status == status]
+    rows = [[i.path.name, i.title, i.status, len(_tasks(i.path))] for _, i in kept]
+    multi = len({v for v, _ in selected}) > 1
+    _print_table(*_with_vault(["PROJECT", "TITLE", "STATUS", "TASKS"], rows, [v for v, _ in kept], multi))
+    _warn_if_diverged([i for _, i in infos])
 
 
 @app.command()
 def tasks(
     project: Optional[str] = typer.Option(None, "--project", "-p", help="Only tasks of this project (folder name)"),
-    vault: Optional[str] = typer.Option(None, "--vault", help="Vault name (default: default_vault)"),
+    vault: Optional[str] = _vault_option(),
     status: Optional[str] = typer.Option(None, "--status", help="Only tasks with this status"),
+    all_: bool = typer.Option(False, "--all", help="Every project, even inside a repo linked to a project"),
 ):
-    """List task notes from 01-projects/<project>/tasks/. A status in project.json wins over the note's."""
-    root = _vault_root(vault)
-    projects = [_project(root, project)] if project else _projects(root)
-    infos = [_read_project(p) for p in projects]
-    rows = []
-    for info in infos:
+    """List task notes from 01-projects/<project>/tasks/. A status in project.json wins over the note's.
+
+    Without --project, a repo linked to a project (or a project folder) shows only that project's tasks.
+    """
+    ctx = _context(_load(), vault)
+    if not project and not all_ and ctx.project:
+        vault, project = ctx.project
+        typer.secho(f"Showing project {project} (see `danfault vault which`). Use --all for every project.", err=True)
+    selected = _selected(vault, project)
+    infos = [(v, _read_project(p)) for v, p in selected]
+    rows, names = [], []
+    for v, info in infos:
         for task in _tasks(info.path):
             meta = _frontmatter(task)
             task_status = _task_status(info, task)
             if status and task_status != status:
                 continue
             rows.append([info.path.name, task.stem, meta.get("title", ""), task_status, meta.get("created", "")])
-    _print_table(["PROJECT", "TASK", "TITLE", "STATUS", "CREATED"], rows)
-    _warn_if_diverged(infos)
+            names.append(v)
+    multi = len({v for v, _ in selected}) > 1
+    _print_table(*_with_vault(["PROJECT", "TASK", "TITLE", "STATUS", "CREATED"], rows, names, multi))
+    _warn_if_diverged([i for _, i in infos])
 
 
 @project_app.command("init")
@@ -652,19 +891,18 @@ def project_init(
     domain: str = typer.Option("", "--domain", help="Domain for a new SUMMARY.md (one of `danfault vault domains`)"),
     goal: str = typer.Option("", "--goal", help="One-sentence goal for a new SUMMARY.md"),
     status: Optional[str] = typer.Option(None, "--status", help="Status for new files (default: SUMMARY.md's, else active)"),
-    vault: Optional[str] = typer.Option(None, "--vault", help="Vault name (default: default_vault)"),
+    vault: Optional[str] = _vault_option(),
 ):
     """Create a project, or add what an existing one is missing (folders, SUMMARY.md, project.json).
 
     Existing files are never overwritten, so it is safe to run on an existing project to enhance it.
+    In a repo linked to several vaults, a new project needs --vault.
     """
-    cfg = _load()
-    _, v = _resolve_vault(cfg, vault)
-    domains_cfg = v.get("domains") or []
+    vault_name, path = _project_root(vault, name, new=True)
+    domains_cfg = (_load()["vaults"][vault_name] or {}).get("domains") or []
     if domain and domains_cfg and domain not in domains_cfg:
         typer.secho(f"Unknown domain '{domain}'. Known: {', '.join(domains_cfg)}", fg="red", err=True)
         raise typer.Exit(1)
-    path = _vault_root(vault) / "01-projects" / name
 
     info = _read_project(path) if path.is_dir() else _ProjectInfo(path)
     if info.errors:
@@ -677,6 +915,7 @@ def project_init(
         _warn("--title/--domain/--goal ignored: SUMMARY.md already exists.")
     status = status or info.md_status or "active"
 
+    typer.echo(f"vault: {vault_name}")
     for folder in PROJECT_FOLDERS:
         if (path / folder).is_dir():
             typer.echo(f"kept existing: {folder}/")
@@ -707,10 +946,10 @@ def project_init(
 def project_set_status(
     project: str = typer.Argument(..., help="Project folder name"),
     status: str = typer.Argument(..., help="New status, e.g. active, finished"),
-    vault: Optional[str] = typer.Option(None, "--vault", help="Vault name (default: default_vault)"),
+    vault: Optional[str] = _vault_option(),
 ):
     """Set a project's status in its project.json (created if missing). SUMMARY.md is not touched."""
-    path = _project(_vault_root(vault), project)
+    _, path = _project_root(vault, project)
     info = _read_project(path)
     try:
         data = _read_project_json(path / PROJECT_JSON)
@@ -727,15 +966,45 @@ def project_set_status(
         )
 
 
+@project_app.command("link")
+def project_link(
+    project: str = typer.Argument(..., help="Project folder name"),
+    repo: Optional[str] = typer.Option(None, "--repo", help="owner/repo (default: origin of the current git repo)"),
+    vault: Optional[str] = _vault_option(),
+):
+    """Link a code repo to a project (adds it to "repos" in project.json). This also links the repo to the vault.
+
+    Inside that repo, `tasks` then shows this project. Nothing is written to the repo.
+    """
+    vault_name, path = _project_root(vault, project)
+    repo = _repo_arg(repo)
+    info = _read_project(path)
+    if info.errors:
+        for e in info.errors:
+            typer.secho(f"{project}: {e}. Fix it before linking.", fg="red", err=True)
+        raise typer.Exit(1)
+    others = [f"{v}/{p}" for v, p in _linked_projects(_load(), repo) if (v, p) != (vault_name, project)]
+    data = _read_project_json(path / PROJECT_JSON)
+    repos_ = data.setdefault("repos", [])
+    if repo in [r.lower() for r in repos_]:
+        typer.echo(f"{vault_name}/{project}: already linked to {repo}")
+    else:
+        repos_.append(repo)
+        (path / PROJECT_JSON).write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        typer.echo(f"{vault_name}/{project}: linked to {repo}")
+    if others:
+        _warn(f"{repo} is also linked to {', '.join(others)}. In that repo, `tasks` uses the first one found.")
+
+
 @task_app.command("set-status")
 def task_set_status(
     project: str = typer.Argument(..., help="Project folder name"),
     task: str = typer.Argument(..., help="Task id (file name in tasks/, without .md)"),
     status: str = typer.Argument(..., help="New status, e.g. open, done, blocked"),
-    vault: Optional[str] = typer.Option(None, "--vault", help="Vault name (default: default_vault)"),
+    vault: Optional[str] = _vault_option(),
 ):
     """Set a task's status in its project's project.json (created if missing). The task note is not touched."""
-    path = _project(_vault_root(vault), project)
+    _, path = _project_root(vault, project)
     note = path / "tasks" / f"{task}.md"
     if not note.exists():
         typer.secho(f"Unknown task '{task}'. See `danfault vault tasks --project {project}`.", fg="red", err=True)
@@ -761,36 +1030,48 @@ def task_set_status(
 @app.command("health-check")
 def health_check(
     project: Optional[str] = typer.Option(None, "--project", "-p", help="Only check this project (folder name)"),
-    vault: Optional[str] = typer.Option(None, "--vault", help="Vault name (default: default_vault)"),
+    vault: Optional[str] = _vault_option(),
 ):
     """Report status divergences, missing statuses and malformed metadata. Exits 1 if any issue is found.
 
     Also lists projects without a project.json (not yet enhanced). That list is only a guide and does not
     change the exit code.
     """
-    root = _vault_root(vault)
-    projects = [_project(root, project)] if project else _projects(root)
+    roots = _roots(vault)
+    selected = _selected(vault, project)
+    multi = len(roots) > 1
+    label = (lambda v, name: f"{v}/{name}") if multi else (lambda v, name: name)
     issues = []
-    not_enhanced = [p.name for p in projects if not (p / PROJECT_JSON).exists()]
-    for p in projects:
+    if not project:
+        for v, root in roots.items():
+            if (root / VAULT_JSON).exists():
+                try:
+                    repos_ = _read_project_json(root / VAULT_JSON).get("repos", [])
+                    if not isinstance(repos_, list) or not all(isinstance(r, str) for r in repos_):
+                        issues.append((label(v, VAULT_JSON), '"repos" is not a list of "owner/repo" strings'))
+                except ValueError as e:
+                    issues.append((label(v, VAULT_JSON), str(e).replace(PROJECT_JSON, VAULT_JSON)))
+    not_enhanced = [label(v, p.name) for v, p in selected if not (p / PROJECT_JSON).exists()]
+    for v, p in selected:
+        name = label(v, p.name)
         info = _read_project(p)
-        issues += [(p.name, e) for e in info.errors]
+        issues += [(name, e) for e in info.errors]
         if info.diverged:
-            issues.append((p.name, f"status differs: {PROJECT_JSON}={info.json_status}, SUMMARY.md={info.md_status}"))
+            issues.append((name, f"status differs: {PROJECT_JSON}={info.json_status}, SUMMARY.md={info.md_status}"))
         elif info.status == "unknown" and not info.errors:
-            issues.append((p.name, f"no status in {PROJECT_JSON} or SUMMARY.md"))
+            issues.append((name, f"no status in {PROJECT_JSON} or SUMMARY.md"))
         task_files = _tasks(p)
         for task in task_files:
             try:
                 if not (info.json_tasks.get(task.stem) or _parse_frontmatter(task).get("status")):
-                    issues.append((p.name, f"tasks/{task.name}: no status"))
+                    issues.append((name, f"tasks/{task.name}: no status"))
             except ValueError as e:
-                issues.append((p.name, f"tasks/{task.name}: {e}"))
+                issues.append((name, f"tasks/{task.name}: {e}"))
         for t, json_status, md_status in _task_divergences(info):
-            issues.append((p.name, f"tasks/{t}.md: status differs: {PROJECT_JSON}={json_status}, note={md_status}"))
+            issues.append((name, f"tasks/{t}.md: status differs: {PROJECT_JSON}={json_status}, note={md_status}"))
         existing = {t.stem for t in task_files}
         for t in sorted(set(info.json_tasks) - existing):
-            issues.append((p.name, f'{PROJECT_JSON} has task "{t}" but tasks/{t}.md does not exist'))
+            issues.append((name, f'{PROJECT_JSON} has task "{t}" but tasks/{t}.md does not exist'))
     if issues:
         _print_table(["PROJECT", "ISSUE"], [list(i) for i in issues])
     else:

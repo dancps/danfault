@@ -38,6 +38,8 @@ The folders and files come from `danfault vault project init`. Do not create the
 
 4. **Report** — show the user the `created` / `kept existing` lines and any warning the command prints.
 
+   If the session runs in a code repo (`git remote get-url origin` works), ask whether to link it to the project, then run `danfault vault project link <project-name>`. Inside the repo, the CLI then picks this vault and project.
+
 5. **Trigger reindex:**
    ```bash
    uv run --project ~/danfault/python/obsidian-mcp obsidian-index
