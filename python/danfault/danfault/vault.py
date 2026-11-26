@@ -611,6 +611,9 @@ def init(
         _setup_github(root, f"{name}-obsidian-vault")
 
     mcp_project = Path(__file__).resolve().parents[2] / "obsidian-mcp"
+    if not (mcp_project / "pyproject.toml").exists():
+        # Installed with `uv tool`, __file__ is in site-packages: use the repo path the skills use.
+        mcp_project = Path("~/danfault/python/obsidian-mcp").expanduser()
     typer.echo("\nNext steps:")
     typer.echo("  1. Build the search index:")
     typer.echo(f'     uv run --project "{mcp_project}" obsidian-index --vault {name} --full')
